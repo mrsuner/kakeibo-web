@@ -14,10 +14,10 @@ export default function Home() {
             </nav>
             
             <div className="flex items-center gap-4">
-              <button className="text-base-content hover:text-primary transition-colors">Sign In</button>
-              <button className="btn btn-primary">
+              <a href="/auth/login" className="text-base-content hover:text-primary transition-colors">Sign In</a>
+              <a href="/auth/login" className="btn btn-primary">
                 Get Started
-              </button>
+              </a>
             </div>
           </div>
         </div>
@@ -33,9 +33,9 @@ export default function Home() {
             Simple, intuitive expense tracking that helps you understand your spending habits and build better financial wellness.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-            <button className="btn btn-primary btn-lg">
+            <a href="/auth/login" className="btn btn-primary btn-lg">
               Start Tracking Free
-            </button>
+            </a>
             <button className="btn btn-outline btn-primary btn-lg">
               View Demo
             </button>
@@ -61,9 +61,9 @@ export default function Home() {
                 <li className="flex items-center"><span className="text-primary mr-3 text-xl">✓</span> Basic analytics</li>
                 <li className="flex items-center"><span className="text-primary mr-3 text-xl">✓</span> 100 MB storage</li>
               </ul>
-              <button className="btn btn-outline btn-primary w-full">
+              <a href="/auth/login" className="btn btn-outline btn-primary w-full">
                 Get Started
-              </button>
+              </a>
             </div>
 
             {/* Pro Plan */}
@@ -79,9 +79,9 @@ export default function Home() {
                 <li className="flex items-center"><span className="text-primary-content/80 mr-3 text-xl">✓</span> Advanced analytics</li>
                 <li className="flex items-center"><span className="text-primary-content/80 mr-3 text-xl">✓</span> 10 GB storage</li>
               </ul>
-              <button className="btn btn-secondary w-full">
+              <a href="/auth/login" className="btn btn-secondary w-full">
                 Start Free Trial
-              </button>
+              </a>
             </div>
 
             {/* Max Plan */}
@@ -94,9 +94,9 @@ export default function Home() {
                 <li className="flex items-center"><span className="text-primary mr-3 text-xl">✓</span> Priority support</li>
                 <li className="flex items-center"><span className="text-primary mr-3 text-xl">✓</span> 100 GB storage</li>
               </ul>
-              <button className="btn btn-outline btn-primary w-full">
+              <a href="/auth/login" className="btn btn-outline btn-primary w-full">
                 Upgrade Now
-              </button>
+              </a>
             </div>
           </div>
           
