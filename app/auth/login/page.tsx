@@ -1,11 +1,15 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useObtainOtpMutation } from '@/lib/store/api'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const router = useRouter()
+  
+  const [obtainOtp, { isLoading }] = useObtainOtpMutation()
 
   const handleGetOTP = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -20,17 +24,18 @@ export default function LoginPage() {
       return
     }
 
-    setIsLoading(true)
     setMessage('')
 
     try {
-      // TODO: Implement API call to send OTP
-      await new Promise(resolve => setTimeout(resolve, 2000)) // Simulated delay
-      setMessage('OTP sent to your email. Please check your inbox.')
-    } catch (error) {
-      setMessage('Failed to send OTP. Please try again.')
-    } finally {
-      setIsLoading(false)
+      const result = await obtainOtp({ email }).unwrap()
+      setMessage(result.message)
+      
+      // Redirect to verify page with email
+      setTimeout(() => {
+        router.push(`/auth/verify?email=${encodeURIComponent(email)}`)
+      }, 1500)
+    } catch (error: any) {
+      setMessage(error?.data?.message || 'Failed to send OTP. Please try again.')
     }
   }
 

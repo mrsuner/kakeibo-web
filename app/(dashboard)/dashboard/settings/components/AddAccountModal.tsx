@@ -1,22 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-
-interface Account {
-  id: number
-  name: string
-  type: string
-  balance: number
-  isActive: boolean
-  description?: string
-  creditLimit?: number
-  billingCycleDay?: number
-  paymentDueDay?: number
-}
+import { type Account, type CreateAccountRequest } from '@/lib/store/features/accountApi'
 
 interface AddAccountModalProps {
   onClose: () => void
-  onSave: (account: Omit<Account, 'id'>) => void
+  onSave: (account: CreateAccountRequest) => void
 }
 
 export default function AddAccountModal({ onClose, onSave }: AddAccountModalProps) {
@@ -100,12 +89,11 @@ export default function AddAccountModal({ onClose, onSave }: AddAccountModalProp
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000))
 
-      const newAccount: Omit<Account, 'id'> = {
+      const newAccount: CreateAccountRequest = {
         name: formData.name.trim(),
         type: formData.type,
         balance: Number(formData.balance),
         description: formData.description.trim() || undefined,
-        isActive: formData.isActive,
         ...(formData.type === 'credit-card' && {
           creditLimit: Number(formData.creditLimit),
           billingCycleDay: formData.billingCycleDay ? Number(formData.billingCycleDay) : undefined,

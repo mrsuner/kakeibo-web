@@ -1,22 +1,35 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useVerifyOtpMutation, useObtainOtpMutation } from '@/lib/store/api'
+import { useDispatch } from 'react-redux'
+import { setCredentials } from '@/lib/store/authSlice'
 
 export default function VerifyPage() {
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
-  const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [email, setEmail] = useState('')
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const dispatch = useDispatch()
+  
+  const [verifyOtp, { isLoading }] = useVerifyOtpMutation()
+  const [obtainOtp, { isLoading: isResending }] = useObtainOtpMutation()
 
   useEffect(() => {
+    // Get email from URL params
+    const emailParam = searchParams.get('email')
+    if (emailParam) {
+      setEmail(emailParam)
+    }
+    
     // Focus first input on mount
     if (inputRefs.current[0]) {
       inputRefs.current[0].focus()
     }
-  }, [])
+  }, [searchParams])
 
   const handleOTPChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return // Only allow digits
@@ -48,37 +61,47 @@ export default function VerifyPage() {
       return
     }
 
-    setIsLoading(true)
+    if (!email) {
+      setMessage('Email is missing. Please go back to login.')
+      return
+    }
+
     setMessage('')
 
     try {
-      // TODO: Implement API call to verify OTP
-      await new Promise(resolve => setTimeout(resolve, 2000)) // Simulated delay
+      const result = await verifyOtp({ email, otp: otpString }).unwrap()
       
-      // Simulate successful verification
-      router.push('/dashboard')
-    } catch (error) {
-      setMessage('Invalid OTP. Please try again.')
+      // Store credentials in Redux (this also saves token to localStorage)
+      dispatch(setCredentials({
+        user: result.user,
+        token: result.access_token
+      }))
+      
+      // Small delay to ensure Redux state is updated before navigation
+      setTimeout(() => {
+        router.push('/dashboard')
+      }, 100)
+    } catch (error: any) {
+      setMessage(error?.data?.message || 'Invalid OTP. Please try again.')
       // Clear OTP fields on error
       setOtp(['', '', '', '', '', ''])
       inputRefs.current[0]?.focus()
-    } finally {
-      setIsLoading(false)
     }
   }
 
   const handleResendOTP = async () => {
-    setIsLoading(true)
+    if (!email) {
+      setMessage('Email is missing. Please go back to login.')
+      return
+    }
+
     setMessage('')
 
     try {
-      // TODO: Implement API call to resend OTP
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulated delay
+      const result = await obtainOtp({ email }).unwrap()
       setMessage('New OTP sent to your email')
-    } catch (error) {
-      setMessage('Failed to resend OTP. Please try again.')
-    } finally {
-      setIsLoading(false)
+    } catch (error: any) {
+      setMessage(error?.data?.message || 'Failed to resend OTP. Please try again.')
     }
   }
 
@@ -133,7 +156,7 @@ export default function VerifyPage() {
             <button
               type="submit"
               className="btn btn-primary w-full"
-              disabled={isLoading}
+              disabled={isLoading || isResending}
             >
               {isLoading ? (
                 <>
@@ -153,9 +176,9 @@ export default function VerifyPage() {
               type="button"
               onClick={handleResendOTP}
               className="link link-primary text-sm"
-              disabled={isLoading}
+              disabled={isLoading || isResending}
             >
-              Resend OTP
+              {isResending ? 'Sending...' : 'Resend OTP'}
             </button>
             
             <br />

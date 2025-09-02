@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import AccountsTab from './components/AccountsTab'
-import CategoriesTab from './components/CategoriesTab'
+import CategoriesTabWithAPI from './components/CategoriesTabWithAPI'
 import NotificationsTab from './components/NotificationsTab'
 import PrivacyTab from './components/PrivacyTab'
 
@@ -242,22 +242,12 @@ export default function SettingsPage() {
             
             {/* Accounts Tab */}
             {activeTab === 'accounts' && (
-              <AccountsTab
-                accounts={accounts}
-                onAccountToggle={handleAccountToggle}
-                onAccountUpdate={handleAccountUpdate}
-                onAccountAdd={handleAccountAdd}
-              />
+              <AccountsTab />
             )}
 
             {/* Categories Tab */}
             {activeTab === 'categories' && (
-              <CategoriesTab
-                categories={categories}
-                onCategoryToggle={handleCategoryToggle}
-                onCategoryUpdate={handleCategoryUpdate}
-                onCategoryAdd={handleCategoryAdd}
-              />
+              <CategoriesTabWithAPI />
             )}
 
             {/* Notifications Tab */}

@@ -1,18 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-
-interface Account {
-  id: number
-  name: string
-  type: string
-  balance: number
-  isActive: boolean
-  description?: string
-  creditLimit?: number
-  billingCycleDay?: number
-  paymentDueDay?: number
-}
+import { type Account } from '@/lib/store/features/accountApi'
 
 interface EditAccountModalProps {
   account: Account
