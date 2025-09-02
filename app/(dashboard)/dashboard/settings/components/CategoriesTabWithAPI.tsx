@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/lib/store'
 import AddCategoryModal from './AddCategoryModal'
 import EditCategoryModal from './EditCategoryModal'
 import { 
@@ -20,6 +22,10 @@ interface CategoryForModal extends Category {
 export default function CategoriesTabWithAPI() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingCategory, setEditingCategory] = useState<CategoryForModal | null>(null)
+  
+  // Get user's currency from Redux store
+  const user = useSelector((state: RootState) => state.auth.user)
+  const userCurrency = user?.base_currency || 'USD'
   
   // API hooks
   const { data: categories = [], isLoading, error } = useGetCategoriesQuery({})
@@ -142,7 +148,7 @@ export default function CategoriesTabWithAPI() {
                     </div>
                     {category.budget && (
                       <div className="text-xs text-base-content/60">
-                        Budget: ${category.budget.toLocaleString()}/{category.budgetPeriod || 'month'}
+                        Budget: {userCurrency} {category.budget.toLocaleString()}/{category.budgetPeriod || 'month'}
                       </div>
                     )}
                   </div>
@@ -202,7 +208,7 @@ export default function CategoriesTabWithAPI() {
                     </div>
                     {category.budget && (
                       <div className="text-xs text-base-content/60">
-                        Target: ${category.budget.toLocaleString()}/{category.budgetPeriod || 'month'}
+                        Target: {userCurrency} {category.budget.toLocaleString()}/{category.budgetPeriod || 'month'}
                       </div>
                     )}
                   </div>
@@ -263,6 +269,7 @@ export default function CategoriesTabWithAPI() {
         <AddCategoryModal
           onClose={() => setShowAddModal(false)}
           onSave={handleCategoryAdd}
+          userCurrency={userCurrency}
         />
       )}
 
@@ -272,6 +279,7 @@ export default function CategoriesTabWithAPI() {
           category={editingCategory}
           onClose={() => setEditingCategory(null)}
           onSave={handleCategoryUpdate}
+          userCurrency={userCurrency}
         />
       )}
     </div>

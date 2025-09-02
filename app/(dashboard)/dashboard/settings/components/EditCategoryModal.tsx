@@ -17,9 +17,10 @@ interface EditCategoryModalProps {
   category: Category
   onClose: () => void
   onSave: (category: Category) => void
+  userCurrency?: string
 }
 
-export default function EditCategoryModal({ category, onClose, onSave }: EditCategoryModalProps) {
+export default function EditCategoryModal({ category, onClose, onSave, userCurrency = 'USD' }: EditCategoryModalProps) {
   const [formData, setFormData] = useState({
     name: '',
     type: 'expense' as 'income' | 'expense',
@@ -277,12 +278,12 @@ export default function EditCategoryModal({ category, onClose, onSave }: EditCat
             </label>
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/70">$</span>
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/70">{userCurrency}</span>
                 <input
                   type="number"
                   step="0.01"
                   placeholder="0.00"
-                  className={`input input-bordered w-full pl-8 ${errors.budget ? 'input-error' : 'focus:input-primary'}`}
+                  className={`input input-bordered w-full pl-12 ${errors.budget ? 'input-error' : 'focus:input-primary'}`}
                   value={formData.budget}
                   onChange={(e) => handleInputChange('budget', e.target.value)}
                 />
@@ -340,7 +341,7 @@ export default function EditCategoryModal({ category, onClose, onSave }: EditCat
               </span>
               {formData.budget && (
                 <span className="text-xs text-base-content/60">
-                  ${Number(formData.budget).toLocaleString()}/{formData.budgetPeriod}
+                  {userCurrency} {Number(formData.budget).toLocaleString()}/{formData.budgetPeriod}
                 </span>
               )}
             </div>
