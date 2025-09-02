@@ -5,6 +5,8 @@ import { useSelector } from 'react-redux'
 import { RootState } from '@/lib/store'
 import AddCategoryModal from './AddCategoryModal'
 import EditCategoryModal from './EditCategoryModal'
+import CategoryList from './CategoryList'
+import CategorySummary from './CategorySummary'
 import { 
   useGetCategoriesQuery, 
   useToggleCategoryMutation,
@@ -127,142 +129,29 @@ export default function CategoriesTabWithAPI() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Expense Categories */}
-        <div>
-          <h3 className="text-lg font-semibold text-error mb-4 flex items-center gap-2">
-            <span>💸</span>
-            Expense Categories ({expenseCategories.length})
-          </h3>
-          <div className="space-y-3">
-            {expenseCategories.map(category => (
-              <div key={category.id} className="flex items-center justify-between p-3 border border-base-300 rounded-lg hover:bg-base-50 transition-colors">
-                <div className="flex items-center space-x-3 flex-1">
-                  <div 
-                    className="w-4 h-4 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: category.color }}
-                  ></div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{category.name}</span>
-                      {category.icon && <span>{category.icon}</span>}
-                    </div>
-                    {category.budget && (
-                      <div className="text-xs text-base-content/60">
-                        Budget: {userCurrency} {category.budget.toLocaleString()}/{category.budgetPeriod || 'month'}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleEditCategory(category)}
-                    className="btn btn-ghost btn-xs"
-                    title="Edit category"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                  <input 
-                    type="checkbox" 
-                    className="toggle toggle-primary toggle-sm" 
-                    checked={category.isActive}
-                    onChange={() => handleCategoryToggle(category.id)}
-                  />
-                </div>
-              </div>
-            ))}
-            {expenseCategories.length === 0 && (
-              <div className="text-center py-8 text-base-content/50">
-                <div className="text-4xl mb-2">📝</div>
-                <p>No expense categories yet</p>
-                <button 
-                  onClick={() => setShowAddModal(true)}
-                  className="btn btn-sm btn-outline btn-primary mt-2"
-                >
-                  Add your first expense category
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Income Categories */}
-        <div>
-          <h3 className="text-lg font-semibold text-success mb-4 flex items-center gap-2">
-            <span>💰</span>
-            Income Categories ({incomeCategories.length})
-          </h3>
-          <div className="space-y-3">
-            {incomeCategories.map(category => (
-              <div key={category.id} className="flex items-center justify-between p-3 border border-base-300 rounded-lg hover:bg-base-50 transition-colors">
-                <div className="flex items-center space-x-3 flex-1">
-                  <div 
-                    className="w-4 h-4 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: category.color }}
-                  ></div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{category.name}</span>
-                      {category.icon && <span>{category.icon}</span>}
-                    </div>
-                    {category.budget && (
-                      <div className="text-xs text-base-content/60">
-                        Target: {userCurrency} {category.budget.toLocaleString()}/{category.budgetPeriod || 'month'}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleEditCategory(category)}
-                    className="btn btn-ghost btn-xs"
-                    title="Edit category"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                  <input 
-                    type="checkbox" 
-                    className="toggle toggle-primary toggle-sm" 
-                    checked={category.isActive}
-                    onChange={() => handleCategoryToggle(category.id)}
-                  />
-                </div>
-              </div>
-            ))}
-            {incomeCategories.length === 0 && (
-              <div className="text-center py-8 text-base-content/50">
-                <div className="text-4xl mb-2">💼</div>
-                <p>No income categories yet</p>
-                <button 
-                  onClick={() => setShowAddModal(true)}
-                  className="btn btn-sm btn-outline btn-primary mt-2"
-                >
-                  Add your first income category
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+        <CategoryList
+          type="expense"
+          categories={expenseCategories}
+          userCurrency={userCurrency}
+          onEditCategory={handleEditCategory}
+          onToggleCategory={handleCategoryToggle}
+          onAddCategory={() => setShowAddModal(true)}
+        />
+        <CategoryList
+          type="income"
+          categories={incomeCategories}
+          userCurrency={userCurrency}
+          onEditCategory={handleEditCategory}
+          onToggleCategory={handleCategoryToggle}
+          onAddCategory={() => setShowAddModal(true)}
+        />
       </div>
 
-      {/* Category Summary */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-base-100 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-primary">{categories.length}</div>
-          <div className="text-sm text-base-content/70">Total Categories</div>
-        </div>
-        <div className="bg-base-100 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-success">{incomeCategories.filter(c => c.isActive).length}</div>
-          <div className="text-sm text-base-content/70">Active Income Categories</div>
-        </div>
-        <div className="bg-base-100 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-error">{expenseCategories.filter(c => c.isActive).length}</div>
-          <div className="text-sm text-base-content/70">Active Expense Categories</div>
-        </div>
-      </div>
+      <CategorySummary 
+        categories={categories}
+        expenseCategories={expenseCategories}
+        incomeCategories={incomeCategories}
+      />
 
       {/* Add Category Modal */}
       {showAddModal && (
