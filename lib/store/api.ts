@@ -5,14 +5,44 @@ export interface User {
   name?: string
   email: string
   email_verified_at?: string
+  phone_dial_code?: string
+  phone_number?: string
+  phone_verified_at?: string
+  gender?: string
   avatar?: string
   base_currency_id?: number
   base_currency?: string
   subscription_plan: string
   timezone: string
   language: string
+  month_start?: number
+  week_start?: number
   created_at: string
   updated_at: string
+}
+
+export interface Currency {
+  id: number
+  code: string
+  name: string
+  symbol: string
+  country: string
+  flag: string
+}
+
+export interface UpdateUserRequest {
+  name?: string
+  timezone?: string
+  language?: string
+  month_start?: number
+  week_start?: number
+  avatar?: string
+}
+
+export interface UserStats {
+  total_transactions: number
+  active_accounts: number
+  days_active: number
 }
 
 export interface AuthResponse {
@@ -53,6 +83,25 @@ export const authApi = baseApi.injectEndpoints({
       transformResponse: (response: ApiResponse<User>) => response.data,
       providesTags: ['User'],
     }),
+    updateMe: builder.mutation<User, UpdateUserRequest>({
+      query: (data) => ({
+        url: '/me',
+        method: 'PATCH',
+        body: data,
+      }),
+      transformResponse: (response: ApiResponse<User>) => response.data,
+      invalidatesTags: ['User'],
+    }),
+    getCurrencies: builder.query<Currency[], void>({
+      query: () => '/currencies',
+      transformResponse: (response: ApiResponse<Currency[]>) => response.data,
+      providesTags: ['Currency'],
+    }),
+    getMeStats: builder.query<UserStats, void>({
+      query: () => '/me/stats',
+      transformResponse: (response: ApiResponse<UserStats>) => response.data,
+      providesTags: ['User'],
+    }),
   }),
   overrideExisting: false,
 })
@@ -61,4 +110,7 @@ export const {
   useObtainOtpMutation,
   useVerifyOtpMutation,
   useGetMeQuery,
+  useUpdateMeMutation,
+  useGetCurrenciesQuery,
+  useGetMeStatsQuery,
 } = authApi

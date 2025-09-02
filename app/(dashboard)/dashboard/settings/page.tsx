@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import AccountsTab from './components/AccountsTab'
 import CategoriesTabWithAPI from './components/CategoriesTabWithAPI'
 import NotificationsTab from './components/NotificationsTab'
@@ -32,6 +32,7 @@ interface Category {
 
 export default function SettingsPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState('accounts')
   const [message, setMessage] = useState('')
 
@@ -94,6 +95,21 @@ export default function SettingsPage() {
     shareUsageData: true,
     marketingEmails: false
   })
+
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    const validTabs = ['accounts', 'categories', 'notifications', 'privacy']
+    if (tab && validTabs.includes(tab)) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId)
+    const url = new URL(window.location.href)
+    url.searchParams.set('tab', tabId)
+    router.push(url.pathname + url.search, { scroll: false })
+  }
 
   const handleAccountToggle = (accountId: number) => {
     setAccounts(prev => prev.map(account => 
@@ -221,7 +237,7 @@ export default function SettingsPage() {
               {tabs.map(tab => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => handleTabChange(tab.id)}
                   className={`w-full text-left p-3 rounded-lg transition-colors ${
                     activeTab === tab.id 
                       ? 'bg-primary text-primary-content' 
