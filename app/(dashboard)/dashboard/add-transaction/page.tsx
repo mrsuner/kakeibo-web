@@ -1,7 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useGetCategoriesQuery } from '@/lib/store/features/categoryApi'
+import { useGetAccountsQuery } from '@/lib/store/features/accountApi'
+import { useCreateTransactionMutation } from '@/lib/store/features/transactionApi'
 
 export default function AddTransactionPage() {
   const router = useRouter()
@@ -17,26 +20,21 @@ export default function AddTransactionPage() {
     notes: ''
   })
 
-  const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
 
-  // Mock data - will be replaced with API calls
-  const accounts = [
-    { id: 1, name: 'Checking Account', type: 'bank' },
-    { id: 2, name: 'Savings Account', type: 'bank' },
-    { id: 3, name: 'Cash', type: 'cash' },
-    { id: 4, name: 'Credit Card', type: 'credit' }
-  ]
+  // API hooks
+  const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery({ 
+    type: formData.type 
+  })
+  const { data: accounts = [], isLoading: accountsLoading } = useGetAccountsQuery()
+  const [createTransaction, { isLoading: isSubmitting }] = useCreateTransactionMutation()
 
-  const expenseCategories = [
-    'Food', 'Transport', 'Shopping', 'Entertainment', 'Utilities', 
-    'Healthcare', 'Education', 'Insurance', 'Rent', 'Other'
-  ]
-
-  const incomeCategories = [
-    'Salary', 'Freelance', 'Business', 'Investment', 'Gift', 
-    'Bonus', 'Rental', 'Other'
-  ]
+  // Reset category when transaction type changes
+  useEffect(() => {
+    if (formData.category) {
+      setFormData(prev => ({ ...prev, category: '' }))
+    }
+  }, [formData.type])
 
   const necessityLevels = [
     { value: '1', label: 'Essential', color: 'text-error' },
@@ -66,12 +64,19 @@ export default function AddTransactionPage() {
       return
     }
 
-    setIsLoading(true)
     setMessage('')
 
     try {
-      // TODO: Implement API call to save transaction
-      await new Promise(resolve => setTimeout(resolve, 1500)) // Simulated delay
+      await createTransaction({
+        type: formData.type,
+        amount: Number(formData.amount),
+        description: formData.description,
+        category_id: Number(formData.category),
+        account_id: Number(formData.account),
+        date: formData.date,
+        tags: formData.tags || undefined,
+        necessityRating: formData.type === 'expense' ? Number(formData.necessityRating) : undefined,
+      }).unwrap()
       
       setMessage('Transaction added successfully!')
       
@@ -79,10 +84,9 @@ export default function AddTransactionPage() {
       setTimeout(() => {
         router.push('/dashboard')
       }, 1500)
-    } catch (error) {
-      setMessage('Failed to add transaction. Please try again.')
-    } finally {
-      setIsLoading(false)
+    } catch (error: any) {
+      const errorMessage = error?.data?.meta?.message || 'Failed to add transaction. Please try again.'
+      setMessage(errorMessage)
     }
   }
 
@@ -193,10 +197,13 @@ export default function AddTransactionPage() {
                 value={formData.category}
                 onChange={(e) => handleInputChange('category', e.target.value)}
                 required
+                disabled={categoriesLoading}
               >
-                <option value="">Select category</option>
-                {(formData.type === 'expense' ? expenseCategories : incomeCategories).map(category => (
-                  <option key={category} value={category}>{category}</option>
+                <option value="">
+                  {categoriesLoading ? 'Loading categories...' : 'Select category'}
+                </option>
+                {categories.map(category => (
+                  <option key={category.id} value={category.id}>{category.name}</option>
                 ))}
               </select>
             </div>
@@ -210,8 +217,11 @@ export default function AddTransactionPage() {
                 value={formData.account}
                 onChange={(e) => handleInputChange('account', e.target.value)}
                 required
+                disabled={accountsLoading}
               >
-                <option value="">Select account</option>
+                <option value="">
+                  {accountsLoading ? 'Loading accounts...' : 'Select account'}
+                </option>
                 {accounts.map(account => (
                   <option key={account.id} value={account.id}>
                     {account.name} ({account.type})
@@ -296,16 +306,16 @@ export default function AddTransactionPage() {
               type="button"
               onClick={() => router.push('/dashboard')}
               className="btn btn-outline flex-1"
-              disabled={isLoading}
+              disabled={isSubmitting}
             >
               Cancel
             </button>
             <button
               type="submit"
               className="btn btn-primary flex-1"
-              disabled={isLoading}
+              disabled={isSubmitting || categoriesLoading || accountsLoading}
             >
-              {isLoading ? (
+              {isSubmitting ? (
                 <>
                   <span className="loading loading-spinner loading-sm"></span>
                   Adding...
