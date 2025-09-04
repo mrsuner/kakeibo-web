@@ -12,7 +12,6 @@ import {
   resetTransactionForm,
   setAmount,
   setDescription,
-  setDate,
   setSubmitting,
   setMessage
 } from '@/lib/store/features/transactionFormSlice'
@@ -21,6 +20,7 @@ import AccountSelectModal from '@/components/domain/transaction/account-select-m
 import CategorySelectModal from '@/components/domain/transaction/category-select-modal'
 import TagInput from '@/components/domain/transaction/tag-input'
 import NecessityRating from '@/components/domain/transaction/necessity-rating'
+import DatePicker from '@/components/domain/transaction/date-picker'
 
 export default function AddTransactionPage() {
   const router = useRouter()
@@ -130,18 +130,7 @@ export default function AddTransactionPage() {
               </div>
             </div>
 
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text font-medium">Date *</span>
-              </label>
-              <input
-                type="date"
-                className="input input-bordered focus:input-primary"
-                value={formData.date}
-                onChange={(e) => dispatch(setDate(e.target.value))}
-                required
-              />
-            </div>
+            <DatePicker />
           </div>
 
           {/* Description */}
