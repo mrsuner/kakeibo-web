@@ -9,9 +9,14 @@ const CategorySchema = z.object({
   color: z.string(),
   isActive: z.boolean(),
   icon: z.string().optional().nullable(),
-  budget: z.number().optional().nullable(),
+  budget: z.union([z.number(), z.string()]).optional().nullable().transform((val) => {
+    if (val === null || val === undefined) return null
+    return typeof val === 'string' ? parseFloat(val) : val
+  }),
   budgetPeriod: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
+  hits: z.number().optional().default(0),
+  isDefault: z.boolean().optional().default(false),
 })
 
 const CategoriesResponseSchema = z.object({
@@ -76,7 +81,13 @@ export const categoryApi = baseApi.injectEndpoints({
         }
         // Handle the wrapped response format
         if (response?.data?.categories) {
-          return response.data.categories
+          // Parse categories to ensure budget is a number
+          return response.data.categories.map((cat: any) => ({
+            ...cat,
+            budget: cat.budget ? parseFloat(cat.budget) : null,
+            hits: cat.hits || 0,
+            isDefault: cat.is_default || false,
+          }))
         }
         // Fallback to empty array
         return []

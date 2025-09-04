@@ -1,92 +1,91 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useGetCategoriesQuery } from '@/lib/store/features/categoryApi'
-import { useGetAccountsQuery } from '@/lib/store/features/accountApi'
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
 import { useCreateTransactionMutation } from '@/lib/store/features/transactionApi'
+import { 
+  openAccountModal, 
+  clearSelectedAccount, 
+  openCategoryModal,
+  clearSelectedCategory,
+  resetTransactionForm,
+  setAmount,
+  setDescription,
+  setDate,
+  setSubmitting,
+  setMessage
+} from '@/lib/store/features/transactionFormSlice'
+import TransactionTypeSelector from '@/components/domain/transaction/transaction-type-selector'
+import AccountSelectModal from '@/components/domain/transaction/account-select-modal'
+import CategorySelectModal from '@/components/domain/transaction/category-select-modal'
+import TagInput from '@/components/domain/transaction/tag-input'
+import NecessityRating from '@/components/domain/transaction/necessity-rating'
 
 export default function AddTransactionPage() {
   const router = useRouter()
-  const [formData, setFormData] = useState({
-    type: 'expense' as 'income' | 'expense',
-    amount: '',
-    description: '',
-    category: '',
-    account: '',
-    date: new Date().toISOString().split('T')[0],
-    tags: '',
-    necessityRating: '3',
-    notes: ''
-  })
-
-  const [message, setMessage] = useState('')
+  const dispatch = useAppDispatch()
+  const { 
+    formData,
+    selectedAccount, 
+    selectedCategory,
+    message,
+    isSubmitting 
+  } = useAppSelector((state) => state.transactionForm)
 
   // API hooks
-  const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery({ 
-    type: formData.type 
-  })
-  const { data: accounts = [], isLoading: accountsLoading } = useGetAccountsQuery()
-  const [createTransaction, { isLoading: isSubmitting }] = useCreateTransactionMutation()
+  const [createTransaction] = useCreateTransactionMutation()
 
-  // Reset category when transaction type changes
+  // Clean up Redux state on unmount
   useEffect(() => {
-    if (formData.category) {
-      setFormData(prev => ({ ...prev, category: '' }))
+    return () => {
+      dispatch(resetTransactionForm())
     }
-  }, [formData.type])
-
-  const necessityLevels = [
-    { value: '1', label: 'Essential', color: 'text-error' },
-    { value: '2', label: 'Important', color: 'text-warning' },
-    { value: '3', label: 'Moderate', color: 'text-info' },
-    { value: '4', label: 'Optional', color: 'text-success' },
-    { value: '5', label: 'Impulse', color: 'text-secondary' }
-  ]
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
-  }
+  }, [dispatch])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.amount || !formData.description || !formData.category || !formData.account) {
-      setMessage('Please fill in all required fields')
+    if (!formData.amount || !formData.description || !selectedCategory || !selectedAccount) {
+      dispatch(setMessage('Please fill in all required fields'))
       return
     }
 
     if (isNaN(Number(formData.amount)) || Number(formData.amount) <= 0) {
-      setMessage('Please enter a valid amount')
+      dispatch(setMessage('Please enter a valid amount'))
       return
     }
 
-    setMessage('')
+    dispatch(setMessage(''))
+    dispatch(setSubmitting(true))
 
     try {
       await createTransaction({
         type: formData.type,
         amount: Number(formData.amount),
         description: formData.description,
-        category_id: Number(formData.category),
-        account_id: Number(formData.account),
+        category_id: selectedCategory.id,
+        account_id: selectedAccount.id,
         date: formData.date,
-        tags: formData.tags || undefined,
-        necessityRating: formData.type === 'expense' ? Number(formData.necessityRating) : undefined,
+        tags: formData.tags.length > 0 ? formData.tags.join(',') : undefined,
+        necessityRating: formData.type === 'expense' ? formData.necessityRating : undefined,
       }).unwrap()
       
-      setMessage('Transaction added successfully!')
+      dispatch(setMessage('Transaction added successfully!'))
       
       // Redirect to dashboard after successful submission
       setTimeout(() => {
         router.push('/dashboard')
       }, 1500)
-    } catch (error: any) {
-      const errorMessage = error?.data?.meta?.message || 'Failed to add transaction. Please try again.'
-      setMessage(errorMessage)
+    } catch (error) {
+      let errorMessage = 'Failed to add transaction. Please try again.'
+      if (error && typeof error === 'object' && 'data' in error) {
+        const errorData = error as { data?: { meta?: { message?: string } } }
+        errorMessage = errorData.data?.meta?.message || errorMessage
+      }
+      dispatch(setMessage(errorMessage))
+    } finally {
+      dispatch(setSubmitting(false))
     }
   }
 
@@ -109,33 +108,7 @@ export default function AddTransactionPage() {
       <div className="bg-base-100 rounded-xl shadow-lg p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Transaction Type */}
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-medium">Transaction Type *</span>
-            </label>
-            <div className="flex gap-4">
-              <label className="cursor-pointer label">
-                <input 
-                  type="radio" 
-                  name="type" 
-                  className="radio radio-primary" 
-                  checked={formData.type === 'expense'}
-                  onChange={() => handleInputChange('type', 'expense')}
-                />
-                <span className="label-text ml-2">Expense</span>
-              </label>
-              <label className="cursor-pointer label">
-                <input 
-                  type="radio" 
-                  name="type" 
-                  className="radio radio-primary" 
-                  checked={formData.type === 'income'}
-                  onChange={() => handleInputChange('type', 'income')}
-                />
-                <span className="label-text ml-2">Income</span>
-              </label>
-            </div>
-          </div>
+          <TransactionTypeSelector />
 
           {/* Amount and Date */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -151,7 +124,7 @@ export default function AddTransactionPage() {
                   placeholder="0.00"
                   className="input input-bordered w-full pl-8 focus:input-primary"
                   value={formData.amount}
-                  onChange={(e) => handleInputChange('amount', e.target.value)}
+                  onChange={(e) => dispatch(setAmount(e.target.value))}
                   required
                 />
               </div>
@@ -165,7 +138,7 @@ export default function AddTransactionPage() {
                 type="date"
                 className="input input-bordered focus:input-primary"
                 value={formData.date}
-                onChange={(e) => handleInputChange('date', e.target.value)}
+                onChange={(e) => dispatch(setDate(e.target.value))}
                 required
               />
             </div>
@@ -176,12 +149,11 @@ export default function AddTransactionPage() {
             <label className="label">
               <span className="label-text font-medium">Description *</span>
             </label>
-            <input
-              type="text"
+            <textarea
               placeholder="What was this transaction for?"
-              className="input input-bordered focus:input-primary"
+              className="textarea textarea-bordered h-20 focus:textarea-primary resize-none"
               value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
+              onChange={(e) => dispatch(setDescription(e.target.value))}
               required
             />
           </div>
@@ -192,99 +164,97 @@ export default function AddTransactionPage() {
               <label className="label">
                 <span className="label-text font-medium">Category *</span>
               </label>
-              <select 
-                className="select select-bordered focus:select-primary"
-                value={formData.category}
-                onChange={(e) => handleInputChange('category', e.target.value)}
-                required
-                disabled={categoriesLoading}
+              <button
+                type="button"
+                onClick={() => dispatch(openCategoryModal())}
+                className="btn btn-outline btn-block justify-between hover:btn-primary"
               >
-                <option value="">
-                  {categoriesLoading ? 'Loading categories...' : 'Select category'}
-                </option>
-                {categories.map(category => (
-                  <option key={category.id} value={category.id}>{category.name}</option>
-                ))}
-              </select>
+                <div className="flex items-center gap-2">
+                  {selectedCategory ? (
+                    <>
+                      <span className="text-2xl">
+                        {selectedCategory.icon || (formData.type === 'income' ? '💵' : '💸')}
+                      </span>
+                      <div className="text-left">
+                        <p className="font-semibold">{selectedCategory.name}</p>
+                        {selectedCategory.budget && selectedCategory.budget > 0 && (
+                          <p className="text-xs opacity-70">
+                            Budget: ${Number(selectedCategory.budget).toFixed(2)}/{selectedCategory.budgetPeriod || 'month'}
+                          </p>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <span className="text-base-content/60">Select a category</span>
+                  )}
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {selectedCategory && (
+                <button
+                  type="button"
+                  onClick={() => dispatch(clearSelectedCategory())}
+                  className="btn btn-ghost btn-xs mt-2"
+                >
+                  Clear selection
+                </button>
+              )}
             </div>
 
             <div className="form-control">
               <label className="label">
                 <span className="label-text font-medium">Account *</span>
               </label>
-              <select 
-                className="select select-bordered focus:select-primary"
-                value={formData.account}
-                onChange={(e) => handleInputChange('account', e.target.value)}
-                required
-                disabled={accountsLoading}
+              <button
+                type="button"
+                onClick={() => dispatch(openAccountModal())}
+                className="btn btn-outline btn-block justify-between hover:btn-primary"
               >
-                <option value="">
-                  {accountsLoading ? 'Loading accounts...' : 'Select account'}
-                </option>
-                {accounts.map(account => (
-                  <option key={account.id} value={account.id}>
-                    {account.name} ({account.type})
-                  </option>
-                ))}
-              </select>
+                <div className="flex items-center gap-2">
+                  {selectedAccount ? (
+                    <>
+                      <span className="text-2xl">
+                        {selectedAccount.type === 'checking' ? '💳' :
+                         selectedAccount.type === 'savings' ? '🏦' :
+                         selectedAccount.type === 'credit' ? '💰' :
+                         selectedAccount.type === 'investment' ? '📈' :
+                         selectedAccount.type === 'cash' ? '💵' : '💼'}
+                      </span>
+                      <div className="text-left">
+                        <p className="font-semibold">{selectedAccount.name}</p>
+                        <p className="text-xs opacity-70">
+                          {selectedAccount.type} • Balance: ${selectedAccount.balance?.toFixed(2) || '0.00'}
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <span className="text-base-content/60">Select an account</span>
+                  )}
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {selectedAccount && (
+                <button
+                  type="button"
+                  onClick={() => dispatch(clearSelectedAccount())}
+                  className="btn btn-ghost btn-xs mt-2"
+                >
+                  Clear selection
+                </button>
+              )}
             </div>
           </div>
 
           {/* Tags */}
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-medium">Tags</span>
-              <span className="label-text-alt">Separate with commas</span>
-            </label>
-            <input
-              type="text"
-              placeholder="restaurant, lunch, japanese-food"
-              className="input input-bordered focus:input-primary"
-              value={formData.tags}
-              onChange={(e) => handleInputChange('tags', e.target.value)}
-            />
-          </div>
+          <TagInput />
 
           {/* Necessity Rating (only for expenses) */}
-          {formData.type === 'expense' && (
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text font-medium">Necessity Rating</span>
-                <span className="label-text-alt">How necessary was this expense?</span>
-              </label>
-              <div className="flex flex-wrap gap-3">
-                {necessityLevels.map(level => (
-                  <label key={level.value} className="cursor-pointer">
-                    <input
-                      type="radio"
-                      name="necessityRating"
-                      value={level.value}
-                      checked={formData.necessityRating === level.value}
-                      onChange={(e) => handleInputChange('necessityRating', e.target.value)}
-                      className="radio radio-primary radio-sm"
-                    />
-                    <span className={`ml-2 text-sm font-medium ${level.color}`}>
-                      {level.label}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
+          <NecessityRating />
 
-          {/* Notes */}
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-medium">Notes</span>
-            </label>
-            <textarea
-              className="textarea textarea-bordered h-24 focus:textarea-primary"
-              placeholder="Additional notes or context..."
-              value={formData.notes}
-              onChange={(e) => handleInputChange('notes', e.target.value)}
-            ></textarea>
-          </div>
 
           {/* Message Display */}
           {message && (
@@ -313,7 +283,7 @@ export default function AddTransactionPage() {
             <button
               type="submit"
               className="btn btn-primary flex-1"
-              disabled={isSubmitting || categoriesLoading || accountsLoading}
+              disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>
@@ -327,6 +297,12 @@ export default function AddTransactionPage() {
           </div>
         </form>
       </div>
+
+      {/* Account Select Modal */}
+      <AccountSelectModal />
+      
+      {/* Category Select Modal */}
+      <CategorySelectModal />
     </div>
   )
 }
