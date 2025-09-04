@@ -5,10 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
 import { useCreateTransactionMutation } from '@/lib/store/features/transactionApi'
 import { 
-  openAccountModal, 
-  clearSelectedAccount, 
-  openCategoryModal,
-  clearSelectedCategory,
   resetTransactionForm,
   setAmount,
   setDescription,
@@ -18,6 +14,8 @@ import {
 import TransactionTypeSelector from '@/components/domain/transaction/transaction-type-selector'
 import AccountSelectModal from '@/components/domain/transaction/account-select-modal'
 import CategorySelectModal from '@/components/domain/transaction/category-select-modal'
+import CategorySelectCard from '@/components/domain/transaction/category-select-card'
+import AccountSelectCard from '@/components/domain/transaction/account-select-card'
 import TagInput from '@/components/domain/transaction/tag-input'
 import NecessityRating from '@/components/domain/transaction/necessity-rating'
 import DatePicker from '@/components/domain/transaction/date-picker'
@@ -134,13 +132,13 @@ export default function AddTransactionPage() {
           </div>
 
           {/* Description */}
-          <div className="form-control">
+          <div className="form-control flex flex-col">
             <label className="label">
               <span className="label-text font-medium">Description *</span>
             </label>
             <textarea
               placeholder="What was this transaction for?"
-              className="textarea textarea-bordered h-20 focus:textarea-primary resize-none"
+              className="textarea textarea-bordered h-20 w-full focus:textarea-primary resize-none"
               value={formData.description}
               onChange={(e) => dispatch(setDescription(e.target.value))}
               required
@@ -149,93 +147,8 @@ export default function AddTransactionPage() {
 
           {/* Category and Account */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text font-medium">Category *</span>
-              </label>
-              <button
-                type="button"
-                onClick={() => dispatch(openCategoryModal())}
-                className="btn btn-outline btn-block justify-between hover:btn-primary"
-              >
-                <div className="flex items-center gap-2">
-                  {selectedCategory ? (
-                    <>
-                      <span className="text-2xl">
-                        {selectedCategory.icon || (formData.type === 'income' ? '💵' : '💸')}
-                      </span>
-                      <div className="text-left">
-                        <p className="font-semibold">{selectedCategory.name}</p>
-                        {selectedCategory.budget && selectedCategory.budget > 0 && (
-                          <p className="text-xs opacity-70">
-                            Budget: ${Number(selectedCategory.budget).toFixed(2)}/{selectedCategory.budgetPeriod || 'month'}
-                          </p>
-                        )}
-                      </div>
-                    </>
-                  ) : (
-                    <span className="text-base-content/60">Select a category</span>
-                  )}
-                </div>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              {selectedCategory && (
-                <button
-                  type="button"
-                  onClick={() => dispatch(clearSelectedCategory())}
-                  className="btn btn-ghost btn-xs mt-2"
-                >
-                  Clear selection
-                </button>
-              )}
-            </div>
-
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text font-medium">Account *</span>
-              </label>
-              <button
-                type="button"
-                onClick={() => dispatch(openAccountModal())}
-                className="btn btn-outline btn-block justify-between hover:btn-primary"
-              >
-                <div className="flex items-center gap-2">
-                  {selectedAccount ? (
-                    <>
-                      <span className="text-2xl">
-                        {selectedAccount.type === 'checking' ? '💳' :
-                         selectedAccount.type === 'savings' ? '🏦' :
-                         selectedAccount.type === 'credit' ? '💰' :
-                         selectedAccount.type === 'investment' ? '📈' :
-                         selectedAccount.type === 'cash' ? '💵' : '💼'}
-                      </span>
-                      <div className="text-left">
-                        <p className="font-semibold">{selectedAccount.name}</p>
-                        <p className="text-xs opacity-70">
-                          {selectedAccount.type} • Balance: ${selectedAccount.balance?.toFixed(2) || '0.00'}
-                        </p>
-                      </div>
-                    </>
-                  ) : (
-                    <span className="text-base-content/60">Select an account</span>
-                  )}
-                </div>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              {selectedAccount && (
-                <button
-                  type="button"
-                  onClick={() => dispatch(clearSelectedAccount())}
-                  className="btn btn-ghost btn-xs mt-2"
-                >
-                  Clear selection
-                </button>
-              )}
-            </div>
+            <CategorySelectCard />
+            <AccountSelectCard />
           </div>
 
           {/* Tags */}
