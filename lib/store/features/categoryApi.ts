@@ -53,6 +53,7 @@ export interface CreateCategoryDto {
   budget?: number
   budgetPeriod?: string
   isActive?: boolean
+  isDefault?: boolean
 }
 
 export interface UpdateCategoryDto {
@@ -64,6 +65,7 @@ export interface UpdateCategoryDto {
   budget?: number
   budgetPeriod?: string
   isActive?: boolean
+  isDefault?: boolean
 }
 
 // API slice
@@ -169,6 +171,40 @@ export const categoryApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [{ type: 'Category', id: 'LIST' }],
     }),
+
+    setAsDefaultCategory: builder.mutation<Category, number>({
+      query: (id) => ({
+        url: `/categories/${id}/set-default`,
+        method: 'POST',
+      }),
+      transformResponse: (response: any) => {
+        if (response?.data?.category) {
+          return response.data.category
+        }
+        return response
+      },
+      invalidatesTags: [
+        { type: 'Category', id: 'LIST' },
+        { type: 'Category', id: 'DEFAULT' },
+      ],
+    }),
+
+    getDefaultCategory: builder.query<Category | null, 'income' | 'expense'>({
+      query: (type) => ({
+        url: '/categories/default/get',
+        params: { type },
+      }),
+      transformResponse: (response: any) => {
+        if (response?.data?.category) {
+          return {
+            ...response.data.category,
+            budget: response.data.category.budget ? parseFloat(response.data.category.budget) : null,
+          }
+        }
+        return null
+      },
+      providesTags: [{ type: 'Category', id: 'DEFAULT' }],
+    }),
   }),
 })
 
@@ -180,4 +216,6 @@ export const {
   useUpdateCategoryMutation,
   useToggleCategoryMutation,
   useDeleteCategoryMutation,
+  useSetAsDefaultCategoryMutation,
+  useGetDefaultCategoryQuery,
 } = categoryApi

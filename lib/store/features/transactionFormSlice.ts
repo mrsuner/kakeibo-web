@@ -9,6 +9,7 @@ interface TransactionFormData {
   date: string
   tags: string[]
   necessityRating: number
+  fileIds: string[]
 }
 
 interface TransactionFormState {
@@ -35,6 +36,7 @@ const initialState: TransactionFormState = {
     date: new Date().toISOString().split('T')[0],
     tags: [],
     necessityRating: 6,
+    fileIds: [],
   },
   selectedAccount: null,
   isAccountModalOpen: false,
@@ -62,7 +64,8 @@ export const transactionFormSlice = createSlice({
     
     setTransactionType: (state, action: PayloadAction<'income' | 'expense'>) => {
       state.formData.type = action.payload
-      state.selectedCategory = null // Clear category when type changes
+      // Clear category when type changes (frontend will fetch new default)
+      state.selectedCategory = null
     },
     
     setAmount: (state, action: PayloadAction<string>) => {
@@ -96,6 +99,11 @@ export const transactionFormSlice = createSlice({
     
     removeTag: (state, action: PayloadAction<string>) => {
       state.formData.tags = state.formData.tags.filter(tag => tag !== action.payload)
+    },
+    
+    // File management
+    setFileIds: (state, action: PayloadAction<string[]>) => {
+      state.formData.fileIds = action.payload
     },
     
     // Account management
@@ -152,6 +160,7 @@ export const {
   setTagInput,
   addTag,
   removeTag,
+  setFileIds,
   setSelectedAccount,
   clearSelectedAccount,
   openAccountModal,

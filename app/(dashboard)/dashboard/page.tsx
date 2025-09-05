@@ -151,7 +151,7 @@ export default function DashboardPage() {
         <div className="bg-base-100 rounded-xl p-6 shadow-lg">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-xl font-bold text-base-content">Recent Transactions</h3>
-            <button className="btn btn-outline btn-primary btn-sm">View All</button>
+            <a href="/dashboard/transactions" className="btn btn-outline btn-primary btn-sm">View All</a>
           </div>
           
           <div className="overflow-x-auto">

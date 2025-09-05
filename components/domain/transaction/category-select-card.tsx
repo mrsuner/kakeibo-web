@@ -18,19 +18,17 @@ export default function CategorySelectCard() {
 
   return (
     <div className="form-control">
-      <button
-        type="button"
-        onClick={handleOpenModal}
-        className={`relative p-4 rounded-xl border-2 transition-all hover:shadow-md hover:scale-[1.02] text-left ${
+      <div
+        className={`relative p-4 rounded-xl border-2 transition-all hover:shadow-md hover:scale-[1.02] text-left cursor-pointer ${
           selectedCategory
             ? 'border-primary bg-primary/5 shadow-sm'
             : 'border-base-200 hover:border-primary/50 bg-base-100'
         }`}
+        onClick={handleOpenModal}
       >
         {selectedCategory && (
           <div className="absolute top-2 right-2">
-            <button
-              type="button"
+            <div
               onClick={handleClearSelection}
               className="btn btn-ghost btn-circle btn-xs hover:btn-error"
             >
@@ -43,7 +41,7 @@ export default function CategorySelectCard() {
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
-            </button>
+            </div>
           </div>
         )}
         
@@ -86,7 +84,7 @@ export default function CategorySelectCard() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </div>
-      </button>
+      </div>
     </div>
   )
 }

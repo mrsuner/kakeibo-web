@@ -23,13 +23,27 @@ export default function DashboardLayout({
       <header className="bg-base-100 shadow-sm border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-6">
               <button 
                 onClick={() => router.push('/dashboard')}
                 className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors"
               >
                 Kakeibo
               </button>
+              <nav className="flex items-center space-x-4">
+                <a 
+                  href="/dashboard" 
+                  className="text-sm font-medium text-base-content/70 hover:text-primary transition-colors"
+                >
+                  Dashboard
+                </a>
+                <a 
+                  href="/dashboard/transactions" 
+                  className="text-sm font-medium text-base-content/70 hover:text-primary transition-colors"
+                >
+                  Transactions
+                </a>
+              </nav>
             </div>
             
             <div className="flex items-center space-x-4">

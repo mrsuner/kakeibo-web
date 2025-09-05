@@ -6,6 +6,7 @@ export interface Account {
   type: string
   balance: number
   isActive: boolean
+  isDefault?: boolean
   description?: string
   creditLimit?: number
   billingCycleDay?: number
@@ -20,6 +21,7 @@ export interface CreateAccountRequest {
   creditLimit?: number
   billingCycleDay?: number
   paymentDueDay?: number
+  isDefault?: boolean
 }
 
 export interface UpdateAccountRequest {
@@ -30,6 +32,7 @@ export interface UpdateAccountRequest {
   creditLimit?: number
   billingCycleDay?: number
   paymentDueDay?: number
+  isDefault?: boolean
 }
 
 export const accountApi = baseApi.injectEndpoints({
@@ -77,6 +80,22 @@ export const accountApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Account'],
     }),
+    setAsDefaultAccount: builder.mutation<Account, number>({
+      query: (id) => ({
+        url: `accounts/${id}/set-default`,
+        method: 'POST',
+      }),
+      transformResponse: (response: { data: Account }) => response.data,
+      invalidatesTags: [
+        'Account',
+        { type: 'Account', id: 'DEFAULT' },
+      ],
+    }),
+    getDefaultAccount: builder.query<Account | null, void>({
+      query: () => 'accounts/default/get',
+      transformResponse: (response: { data: Account | null }) => response.data,
+      providesTags: [{ type: 'Account', id: 'DEFAULT' }],
+    }),
   }),
   overrideExisting: false,
 })
@@ -88,4 +107,6 @@ export const {
   useUpdateAccountMutation,
   useToggleAccountMutation,
   useDeleteAccountMutation,
+  useSetAsDefaultAccountMutation,
+  useGetDefaultAccountQuery,
 } = accountApi

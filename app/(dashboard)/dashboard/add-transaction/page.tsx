@@ -4,12 +4,17 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
 import { useCreateTransactionMutation } from '@/lib/store/features/transactionApi'
+import { useGetDefaultCategoryQuery } from '@/lib/store/features/categoryApi'
+import { useGetDefaultAccountQuery } from '@/lib/store/features/accountApi'
 import { 
   resetTransactionForm,
   setAmount,
   setDescription,
   setSubmitting,
-  setMessage
+  setMessage,
+  setFileIds,
+  setSelectedCategory,
+  setSelectedAccount
 } from '@/lib/store/features/transactionFormSlice'
 import TransactionTypeSelector from '@/components/domain/transaction/transaction-type-selector'
 import AccountSelectModal from '@/components/domain/transaction/account-select-modal'
@@ -19,6 +24,7 @@ import AccountSelectCard from '@/components/domain/transaction/account-select-ca
 import TagInput from '@/components/domain/transaction/tag-input'
 import NecessityRating from '@/components/domain/transaction/necessity-rating'
 import DatePicker from '@/components/domain/transaction/date-picker'
+import FileUpload from '@/components/domain/transaction/file-upload'
 
 export default function AddTransactionPage() {
   const router = useRouter()
@@ -33,6 +39,22 @@ export default function AddTransactionPage() {
 
   // API hooks
   const [createTransaction] = useCreateTransactionMutation()
+  const { data: defaultCategory } = useGetDefaultCategoryQuery(formData.type)
+  const { data: defaultAccount } = useGetDefaultAccountQuery()
+
+  // Set default category when it's loaded or when type changes
+  useEffect(() => {
+    if (defaultCategory && !selectedCategory) {
+      dispatch(setSelectedCategory(defaultCategory))
+    }
+  }, [defaultCategory, selectedCategory, dispatch])
+
+  // Set default account when it's loaded
+  useEffect(() => {
+    if (defaultAccount && !selectedAccount) {
+      dispatch(setSelectedAccount(defaultAccount))
+    }
+  }, [defaultAccount, selectedAccount, dispatch])
 
   // Clean up Redux state on unmount
   useEffect(() => {
@@ -67,6 +89,7 @@ export default function AddTransactionPage() {
         date: formData.date,
         tags: formData.tags.length > 0 ? formData.tags.join(',') : undefined,
         necessityRating: formData.type === 'expense' ? formData.necessityRating : undefined,
+        file_ids: formData.fileIds.length > 0 ? formData.fileIds : undefined,
       }).unwrap()
       
       dispatch(setMessage('Transaction added successfully!'))
@@ -95,6 +118,7 @@ export default function AddTransactionPage() {
           <button 
             onClick={() => router.push('/dashboard')}
             className="btn btn-ghost btn-sm"
+            disabled={isSubmitting}
           >
             ← Back
           </button>
@@ -103,10 +127,22 @@ export default function AddTransactionPage() {
         <p className="text-base-content/70">Record a new income or expense transaction</p>
       </div>
 
-      <div className="bg-base-100 rounded-xl shadow-lg p-8">
+      <div className="bg-base-100 rounded-xl shadow-lg p-8 relative">
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Loading Overlay */}
+          {isSubmitting && (
+            <div className="absolute inset-0 bg-base-100/50 rounded-xl flex items-center justify-center z-10">
+              <div className="bg-base-100 rounded-lg p-6 shadow-lg flex items-center gap-3">
+                <span className="loading loading-spinner loading-md"></span>
+                <span className="text-base-content">Creating transaction...</span>
+              </div>
+            </div>
+          )}
+
           {/* Transaction Type */}
-          <TransactionTypeSelector />
+          <div className={isSubmitting ? 'pointer-events-none opacity-50' : ''}>
+            <TransactionTypeSelector />
+          </div>
 
           {/* Amount and Date */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -123,12 +159,29 @@ export default function AddTransactionPage() {
                   className="input input-bordered w-full pl-8 focus:input-primary"
                   value={formData.amount}
                   onChange={(e) => dispatch(setAmount(e.target.value))}
+                  onKeyDown={(e) => {
+                    // Allow: backspace, delete, tab, escape, enter, arrow keys, home, end
+                    if (['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'Home', 'End', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                      return;
+                    }
+                    // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                    if (e.ctrlKey && ['a', 'c', 'v', 'x'].includes(e.key.toLowerCase())) {
+                      return;
+                    }
+                    // Allow: numbers 0-9 and decimal point
+                    if (!/^[0-9.]$/.test(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                  disabled={isSubmitting}
                   required
                 />
               </div>
             </div>
 
-            <DatePicker />
+            <div className={isSubmitting ? 'pointer-events-none opacity-50' : ''}>
+              <DatePicker />
+            </div>
           </div>
 
           {/* Description */}
@@ -141,21 +194,34 @@ export default function AddTransactionPage() {
               className="textarea textarea-bordered h-20 w-full focus:textarea-primary resize-none"
               value={formData.description}
               onChange={(e) => dispatch(setDescription(e.target.value))}
+              disabled={isSubmitting}
               required
             />
           </div>
 
           {/* Category and Account */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}>
             <CategorySelectCard />
             <AccountSelectCard />
           </div>
 
           {/* Tags */}
-          <TagInput />
+          <div className={isSubmitting ? 'pointer-events-none opacity-50' : ''}>
+            <TagInput />
+          </div>
 
           {/* Necessity Rating (only for expenses) */}
-          <NecessityRating />
+          <div className={isSubmitting ? 'pointer-events-none opacity-50' : ''}>
+            <NecessityRating />
+          </div>
+
+          {/* File Upload */}
+          <div className={isSubmitting ? 'pointer-events-none opacity-50' : ''}>
+            <FileUpload 
+              onFilesUploaded={(fileIds) => dispatch(setFileIds(fileIds))}
+              maxFiles={5}
+            />
+          </div>
 
 
           {/* Message Display */}

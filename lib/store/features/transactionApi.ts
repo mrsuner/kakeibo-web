@@ -67,7 +67,7 @@ export interface CreateTransactionDto {
   date: string
   tags?: string
   necessityRating?: number
-  file_ids?: number[]
+  file_ids?: string[]
 }
 
 export interface UpdateTransactionDto {
@@ -79,7 +79,7 @@ export interface UpdateTransactionDto {
   date?: string
   tags?: string
   necessityRating?: number
-  file_ids?: number[]
+  file_ids?: string[]
 }
 
 // API slice
