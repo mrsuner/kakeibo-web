@@ -3,40 +3,68 @@ import { z } from 'zod'
 
 // Zod schemas for validation
 const TransactionCategorySchema = z.object({
-  id: z.number(),
+  id: z.union([z.number(), z.string()]),
   name: z.string(),
-  type: z.string(),
+  icon: z.string().optional().nullable(),
+  type: z.string().optional(),
 })
 
 const TransactionAccountSchema = z.object({
-  id: z.number(),
+  id: z.union([z.number(), z.string()]),
   name: z.string(),
+  type: z.string().optional(),
 })
 
 const TransactionTagSchema = z.object({
-  id: z.number(),
+  id: z.union([z.number(), z.string()]),
   name: z.string(),
+  color: z.string().optional().nullable(),
+})
+
+const TransactionFileSchema = z.object({
+  id: z.union([z.number(), z.string()]),
+  file_id: z.string(),
+  filename: z.string().optional().nullable(),
 })
 
 const TransactionSchema = z.object({
   id: z.string(),
-  type: z.enum(['income', 'expense']),
-  amount: z.number(),
   description: z.string(),
-  date: z.string(),
+  amount: z.number(),
+  converted_amount: z.number().optional().nullable(),
+  currency_code: z.string(),
+  flow_type: z.enum(['income', 'expense']),
+  transaction_at: z.string(),
+  necessity_rating: z.number().optional().nullable(),
+  balance_after: z.number().optional().nullable(),
   category: TransactionCategorySchema.optional().nullable(),
   account: TransactionAccountSchema.optional().nullable(),
   tags: z.array(TransactionTagSchema),
-  necessityRating: z.number().optional().nullable(),
+  files: z.array(TransactionFileSchema).optional(),
+})
+
+const TransactionSummarySchema = z.object({
+  total_income: z.number(),
+  total_expenses: z.number(),
+  net_amount: z.number(),
+})
+
+const PaginationSchema = z.object({
+  current_page: z.number(),
+  per_page: z.number(),
+  total: z.number(),
+  last_page: z.number(),
 })
 
 const TransactionsResponseSchema = z.object({
   meta: z.object({
     code: z.number(),
     message: z.string(),
+    pagination: PaginationSchema.optional(),
   }),
   data: z.object({
     transactions: z.array(TransactionSchema),
+    summary: TransactionSummarySchema.optional(),
   }),
 })
 
@@ -55,6 +83,9 @@ export type Transaction = z.infer<typeof TransactionSchema>
 export type TransactionCategory = z.infer<typeof TransactionCategorySchema>
 export type TransactionAccount = z.infer<typeof TransactionAccountSchema>
 export type TransactionTag = z.infer<typeof TransactionTagSchema>
+export type TransactionFile = z.infer<typeof TransactionFileSchema>
+export type TransactionSummary = z.infer<typeof TransactionSummarySchema>
+export type Pagination = z.infer<typeof PaginationSchema>
 export type TransactionsResponse = z.infer<typeof TransactionsResponseSchema>
 export type TransactionResponse = z.infer<typeof TransactionResponseSchema>
 
@@ -82,35 +113,56 @@ export interface UpdateTransactionDto {
   file_ids?: string[]
 }
 
+export interface GetTransactionsParams {
+  account_id?: number
+  category_id?: number
+  type?: 'income' | 'expense'
+  search?: string
+  sort_by?: 'transaction_at' | 'amount'
+  sort_order?: 'asc' | 'desc'
+  page?: number
+  limit?: number
+}
+
+export interface GetTransactionsResult {
+  transactions: Transaction[]
+  summary?: TransactionSummary
+  pagination?: Pagination
+}
+
 // API slice
 export const transactionApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getTransactions: builder.query<Transaction[], { 
-      account_id?: number, 
-      category_id?: number, 
-      type?: 'income' | 'expense', 
-      limit?: number 
-    }>({
+    getTransactions: builder.query<GetTransactionsResult, GetTransactionsParams>({
       query: (params) => ({
         url: '/transactions',
-        params,
+        params: {
+          ...params,
+          // Ensure defaults
+          sort_by: params.sort_by || 'transaction_at',
+          sort_order: params.sort_order || 'desc',
+          limit: params.limit || 15,
+          page: params.page || 1,
+        },
       }),
       transformResponse: (response: any) => {
-        // Handle the case where response might be an array directly
-        if (Array.isArray(response)) {
-          return response
-        }
         // Handle the wrapped response format
-        if (response?.data?.transactions) {
-          return response.data.transactions
+        if (response?.data) {
+          return {
+            transactions: response.data.transactions || [],
+            summary: response.data.summary,
+            pagination: response.meta.pagination,
+          }
         }
-        // Fallback to empty array
-        return []
+        // Fallback
+        return {
+          transactions: [],
+        }
       },
       providesTags: (result) =>
-        result
+        result?.transactions
           ? [
-              ...result.map(({ id }) => ({ type: 'Transaction' as const, id })),
+              ...result.transactions.map(({ id }) => ({ type: 'Transaction' as const, id })),
               { type: 'Transaction', id: 'LIST' },
             ]
           : [{ type: 'Transaction', id: 'LIST' }],

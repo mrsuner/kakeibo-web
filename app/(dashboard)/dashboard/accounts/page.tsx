@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import AddAccountModal from './AddAccountModal'
-import EditAccountModal from './EditAccountModal'
+import AddAccountModal from '../settings/components/AddAccountModal'
+import EditAccountModal from '../settings/components/EditAccountModal'
 import { 
   useGetAccountsQuery,
   useCreateAccountMutation,
@@ -13,7 +13,7 @@ import {
   type UpdateAccountRequest
 } from '@/lib/store/features/accountApi'
 
-export default function AccountsTab() {
+export default function AccountsPage() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingAccount, setEditingAccount] = useState<Account | null>(null)
 
@@ -105,78 +105,87 @@ export default function AccountsTab() {
   }
 
   return (
-    <div>
+    <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-base-content">Account Management</h2>
-          <p className="text-base-content/70 mt-1">Manage your financial accounts and their visibility</p>
+          <h1 className="text-3xl font-bold text-base-content">My Accounts</h1>
+          <p className="text-base-content/70 mt-1">Manage all your financial accounts in one place</p>
         </div>
         <button 
           onClick={() => setShowAddModal(true)}
-          className="btn btn-primary btn-sm"
+          className="btn btn-primary"
         >
           + Add Account
         </button>
       </div>
 
       {accounts.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="text-4xl mb-4">💰</div>
-          <h3 className="text-lg font-medium text-base-content mb-2">No accounts yet</h3>
-          <p className="text-base-content/70 mb-4">Get started by adding your first financial account</p>
+        <div className="text-center py-16">
+          <div className="text-6xl mb-6">💰</div>
+          <h2 className="text-2xl font-medium text-base-content mb-3">No accounts yet</h2>
+          <p className="text-base-content/70 mb-6 max-w-md mx-auto">
+            Get started by adding your first financial account to begin tracking your finances
+          </p>
           <button 
             onClick={() => setShowAddModal(true)}
-            className="btn btn-primary"
+            className="btn btn-primary btn-lg"
           >
             Add Your First Account
           </button>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="grid gap-6">
           {accounts.map(account => (
-            <div key={account.id} className="border border-base-300 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <span className="text-2xl">{getAccountTypeIcon(account.type)}</span>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-base-content">{account.name}</h3>
-                      <button
-                        onClick={() => handleEditAccount(account)}
-                        className="btn btn-ghost btn-xs"
-                        title="Edit account"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                      </button>
-                    </div>
-                    <p className="text-sm text-base-content/70 capitalize">
-                      {account.type.replace('-', ' ')} account
-                    </p>
-                    {account.description && (
-                      <p className="text-xs text-base-content/60 mt-1">{account.description}</p>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-4">
-                  <div className="text-right">
-                    <div className="font-semibold text-base-content">
-                      ${account.balance.toLocaleString()}
-                    </div>
-                    {account.type === 'credit_card' && account.creditLimit && (
-                      <div className="text-xs text-base-content/60">
-                        Credit: ${account.creditLimit.toLocaleString()}
+            <div key={account.id} className="card bg-base-100 shadow-lg border border-base-300">
+              <div className="card-body">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="text-4xl">{getAccountTypeIcon(account.type)}</div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-1">
+                        <h2 className="text-xl font-bold text-base-content">{account.name}</h2>
+                        <button
+                          onClick={() => handleEditAccount(account)}
+                          className="btn btn-ghost btn-sm btn-circle"
+                          title="Edit account"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
                       </div>
-                    )}
+                      <p className="text-sm text-base-content/70 capitalize mb-1">
+                        {account.type.replace('-', ' ')} account
+                      </p>
+                      {account.description && (
+                        <p className="text-sm text-base-content/60">{account.description}</p>
+                      )}
+                    </div>
                   </div>
-                  <input 
-                    type="checkbox" 
-                    className="toggle toggle-primary" 
-                    checked={account.isActive}
-                    onChange={() => handleAccountToggle(account.id)}
-                  />
+                  
+                  <div className="flex items-center space-x-6">
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-base-content">
+                        ${account.balance.toLocaleString()}
+                      </div>
+                      {account.type === 'credit_card' && account.creditLimit && (
+                        <div className="text-sm text-base-content/60">
+                          Credit Limit: ${account.creditLimit.toLocaleString()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                      <input 
+                        type="checkbox" 
+                        className="toggle toggle-primary toggle-lg" 
+                        checked={account.isActive}
+                        onChange={() => handleAccountToggle(account.id)}
+                      />
+                      <span className="text-xs text-base-content/60">
+                        {account.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -184,7 +193,6 @@ export default function AccountsTab() {
         </div>
       )}
 
-      {/* Add Account Modal */}
       {showAddModal && (
         <AddAccountModal
           onClose={() => setShowAddModal(false)}
@@ -192,7 +200,6 @@ export default function AccountsTab() {
         />
       )}
 
-      {/* Edit Account Modal */}
       {editingAccount && (
         <EditAccountModal
           account={editingAccount}

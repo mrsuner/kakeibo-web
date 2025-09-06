@@ -12,7 +12,7 @@ interface EditAccountModalProps {
 export default function EditAccountModal({ account, onClose, onSave }: EditAccountModalProps) {
   const [formData, setFormData] = useState({
     name: '',
-    type: 'bank',
+    type: 'bank_account',
     balance: '',
     description: '',
     creditLimit: '',
@@ -25,10 +25,10 @@ export default function EditAccountModal({ account, onClose, onSave }: EditAccou
   const [isLoading, setIsLoading] = useState(false)
 
   const accountTypes = [
-    { value: 'bank', label: 'Bank Account', icon: '🏦' },
+    { value: 'bank_account', label: 'Bank Account', icon: '🏦' },
     { value: 'cash', label: 'Cash', icon: '💵' },
-    { value: 'debit-card', label: 'Debit Card', icon: '💳' },
-    { value: 'credit-card', label: 'Credit Card', icon: '💳' }
+    { value: 'credit_card', label: 'Credit Card', icon: '💳' },
+    { value: 'e_wallet', label: 'E-Wallet', icon: '📱' }
   ]
 
   // Initialize form with account data
@@ -73,7 +73,7 @@ export default function EditAccountModal({ account, onClose, onSave }: EditAccou
       newErrors.balance = 'Balance must be a valid number'
     }
 
-    if (formData.type === 'credit-card') {
+    if (formData.type === 'credit_card') {
       if (!formData.creditLimit) {
         newErrors.creditLimit = 'Credit limit is required for credit cards'
       } else if (isNaN(Number(formData.creditLimit)) || Number(formData.creditLimit) <= 0) {
@@ -111,7 +111,7 @@ export default function EditAccountModal({ account, onClose, onSave }: EditAccou
         balance: Number(formData.balance),
         description: formData.description.trim() || undefined,
         isActive: formData.isActive,
-        ...(formData.type === 'credit-card' ? {
+        ...(formData.type === 'credit_card' ? {
           creditLimit: Number(formData.creditLimit),
           billingCycleDay: formData.billingCycleDay ? Number(formData.billingCycleDay) : undefined,
           paymentDueDay: formData.paymentDueDay ? Number(formData.paymentDueDay) : undefined
@@ -200,7 +200,7 @@ export default function EditAccountModal({ account, onClose, onSave }: EditAccou
           <div className="form-control">
             <label className="label">
               <span className="label-text font-medium">
-                {formData.type === 'credit-card' ? 'Current Balance *' : 'Current Balance *'}
+                {formData.type === 'credit_card' ? 'Current Balance *' : 'Current Balance *'}
               </span>
             </label>
             <div className="relative">
@@ -218,7 +218,7 @@ export default function EditAccountModal({ account, onClose, onSave }: EditAccou
           </div>
 
           {/* Credit Card Specific Fields */}
-          {formData.type === 'credit-card' && (
+          {formData.type === 'credit_card' && (
             <>
               {/* Credit Limit */}
               <div className="form-control">

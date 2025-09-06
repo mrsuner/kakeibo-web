@@ -38,9 +38,10 @@ interface TransactionCardProps {
   }
   onEdit?: (id: string) => void
   onDelete?: (id: string) => void
+  onClick?: () => void
 }
 
-export default function TransactionCard({ transaction, onEdit, onDelete }: TransactionCardProps) {
+export default function TransactionCard({ transaction, onEdit, onDelete, onClick }: TransactionCardProps) {
   const formatAmount = (amount: number, flowType: string) => {
     const sign = flowType === 'income' ? '+' : '-'
     return `${sign}$${Math.abs(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -77,8 +78,22 @@ export default function TransactionCard({ transaction, onEdit, onDelete }: Trans
     return ratings[rating] || 'Unknown'
   }
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't trigger card click if clicking on action buttons
+    const target = e.target as HTMLElement
+    if (target.closest('button') || target.closest('[role="button"]')) {
+      return
+    }
+    onClick?.()
+  }
+
   return (
-    <div className="bg-base-100 rounded-xl p-6 shadow-sm border border-base-200 hover:shadow-md transition-all hover:border-primary/20">
+    <div 
+      className={`bg-base-100 rounded-xl p-6 shadow-sm border border-base-200 hover:shadow-md transition-all hover:border-primary/20 ${
+        onClick ? 'cursor-pointer' : ''
+      }`}
+      onClick={handleCardClick}
+    >
       {/* Header Row */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">

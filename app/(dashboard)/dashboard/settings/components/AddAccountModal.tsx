@@ -11,7 +11,7 @@ interface AddAccountModalProps {
 export default function AddAccountModal({ onClose, onSave }: AddAccountModalProps) {
   const [formData, setFormData] = useState({
     name: '',
-    type: 'bank',
+    type: 'bank_account',
     balance: '',
     description: '',
     creditLimit: '',
@@ -24,10 +24,10 @@ export default function AddAccountModal({ onClose, onSave }: AddAccountModalProp
   const [isLoading, setIsLoading] = useState(false)
 
   const accountTypes = [
-    { value: 'bank', label: 'Bank Account', icon: '🏦' },
+    { value: 'bank_account', label: 'Bank Account', icon: '🏦' },
     { value: 'cash', label: 'Cash', icon: '💵' },
-    { value: 'debit-card', label: 'Debit Card', icon: '💳' },
-    { value: 'credit-card', label: 'Credit Card', icon: '💳' }
+    { value: 'credit_card', label: 'Credit Card', icon: '💳' },
+    { value: 'e_wallet', label: 'E-Wallet', icon: '📱' }
   ]
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -58,7 +58,7 @@ export default function AddAccountModal({ onClose, onSave }: AddAccountModalProp
       newErrors.balance = 'Balance must be a valid number'
     }
 
-    if (formData.type === 'credit-card') {
+    if (formData.type === 'credit_card') {
       if (!formData.creditLimit) {
         newErrors.creditLimit = 'Credit limit is required for credit cards'
       } else if (isNaN(Number(formData.creditLimit)) || Number(formData.creditLimit) <= 0) {
@@ -94,7 +94,7 @@ export default function AddAccountModal({ onClose, onSave }: AddAccountModalProp
         type: formData.type,
         balance: Number(formData.balance),
         description: formData.description.trim() || undefined,
-        ...(formData.type === 'credit-card' && {
+        ...(formData.type === 'credit_card' && {
           creditLimit: Number(formData.creditLimit),
           billingCycleDay: formData.billingCycleDay ? Number(formData.billingCycleDay) : undefined,
           paymentDueDay: formData.paymentDueDay ? Number(formData.paymentDueDay) : undefined
@@ -157,7 +157,7 @@ export default function AddAccountModal({ onClose, onSave }: AddAccountModalProp
           <div className="form-control">
             <label className="label">
               <span className="label-text font-medium">
-                {formData.type === 'credit-card' ? 'Current Balance *' : 'Initial Balance *'}
+                {formData.type === 'credit_card' ? 'Current Balance *' : 'Initial Balance *'}
               </span>
             </label>
             <div className="relative">
@@ -175,7 +175,7 @@ export default function AddAccountModal({ onClose, onSave }: AddAccountModalProp
           </div>
 
           {/* Credit Card Specific Fields */}
-          {formData.type === 'credit-card' && (
+          {formData.type === 'credit_card' && (
             <>
               {/* Credit Limit */}
               <div className="form-control">
