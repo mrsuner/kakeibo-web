@@ -88,7 +88,8 @@ export const categoryApi = baseApi.injectEndpoints({
             ...cat,
             budget: cat.budget ? parseFloat(cat.budget) : null,
             hits: cat.hits || 0,
-            isDefault: cat.is_default || false,
+            // Backend returns isDefault already; fall back to is_default if present
+            isDefault: cat.isDefault ?? cat.is_default ?? false,
           }))
         }
         // Fallback to empty array

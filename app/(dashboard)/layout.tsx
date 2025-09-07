@@ -21,6 +21,7 @@ export default function DashboardLayout({
   const navigationItems = [
     { href: '/dashboard', label: 'Dashboard' },
     { href: '/dashboard/transactions', label: 'Transactions' },
+    { href: '/dashboard/categories', label: 'Categories' },
     { href: '/dashboard/accounts', label: 'Accounts' },
   ]
 
