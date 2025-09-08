@@ -45,6 +45,36 @@ export interface UserStats {
   days_active: number
 }
 
+export interface DashboardAccountBalance {
+  name: string
+  balance: number
+  type: 'cash' | 'bank'
+}
+
+export interface DashboardTransaction {
+  id: string
+  description: string
+  amount: number
+  category: string
+  date: string
+  type: 'income' | 'expense'
+}
+
+export interface DashboardCategorySpending {
+  category: string
+  amount: number
+  percentage: number
+}
+
+export interface DashboardData {
+  totalAssets: number
+  monthlyIncome: number
+  monthlyExpenses: number
+  accountBalances: DashboardAccountBalance[]
+  recentTransactions: DashboardTransaction[]
+  categorySpending: DashboardCategorySpending[]
+}
+
 export interface AuthResponse {
   access_token: string
   token_type: string
@@ -102,6 +132,11 @@ export const authApi = baseApi.injectEndpoints({
       transformResponse: (response: ApiResponse<UserStats>) => response.data,
       providesTags: ['User'],
     }),
+    getDashboard: builder.query<DashboardData, void>({
+      query: () => '/me/dashboard',
+      transformResponse: (response: ApiResponse<DashboardData>) => response.data,
+      providesTags: ['User', 'Account', 'Transaction'],
+    }),
   }),
   overrideExisting: false,
 })
@@ -113,4 +148,5 @@ export const {
   useUpdateMeMutation,
   useGetCurrenciesQuery,
   useGetMeStatsQuery,
+  useGetDashboardQuery,
 } = authApi

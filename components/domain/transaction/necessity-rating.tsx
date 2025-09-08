@@ -15,10 +15,10 @@ export default function NecessityRating() {
   }
 
   const getNecessityLabel = (rating: number) => {
-    if (rating <= 2) return 'Essential'
-    if (rating <= 4) return 'Important'
-    if (rating <= 6) return 'Moderate'
-    if (rating <= 8) return 'Optional'
+    if (rating <= 1) return 'Essential'
+    if (rating <= 2) return 'Important'
+    if (rating <= 3) return 'Moderate'
+    if (rating <= 4) return 'Optional'
     return 'Impulse'
   }
 
@@ -30,15 +30,15 @@ export default function NecessityRating() {
       <div className="flex items-center gap-4">
         <Rating
           style={{ maxWidth: 200 }}
-          value={formData.necessityRating / 2}
-          onChange={(value: number) => dispatch(setNecessityRating(value * 2))}
+          value={formData.necessityRating}
+          onChange={(value: number) => dispatch(setNecessityRating(value))}
           halfFillMode="svg"
           readOnly={false}
-          allowFraction
+          allowFraction={false}
           items={5}
         />
         <div className="text-sm text-base-content/70">
-          <span className="font-semibold">{formData.necessityRating}/10</span>
+          <span className="font-semibold">{formData.necessityRating}/5</span>
           <div className="text-xs">
             {getNecessityLabel(formData.necessityRating)}
           </div>

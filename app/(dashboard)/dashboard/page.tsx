@@ -1,35 +1,38 @@
 'use client'
 
-import { useState } from 'react'
+import { useGetDashboardQuery } from '@/lib/store/api'
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState('overview')
+  const { data: dashboardData, error, isLoading } = useGetDashboardQuery()
 
-  // Mock data - will be replaced with real API calls
-  const mockData = {
-    totalAssets: 15750.50,
-    monthlyIncome: 5200.00,
-    monthlyExpenses: 3420.75,
-    accountBalances: [
-      { name: 'Checking Account', balance: 8450.25, type: 'bank' },
-      { name: 'Savings Account', balance: 6200.00, type: 'bank' },
-      { name: 'Cash', balance: 1100.25, type: 'cash' }
-    ],
-    recentTransactions: [
-      { id: 1, description: 'Grocery Shopping', amount: -87.50, category: 'Food', date: '2024-09-01', type: 'expense' },
-      { id: 2, description: 'Salary Deposit', amount: 5200.00, category: 'Salary', date: '2024-09-01', type: 'income' },
-      { id: 3, description: 'Coffee Shop', amount: -5.75, category: 'Food', date: '2024-08-31', type: 'expense' },
-      { id: 4, description: 'Gas Station', amount: -42.00, category: 'Transport', date: '2024-08-31', type: 'expense' },
-      { id: 5, description: 'Online Purchase', amount: -125.99, category: 'Shopping', date: '2024-08-30', type: 'expense' }
-    ],
-    categorySpending: [
-      { category: 'Food', amount: 850.25, percentage: 35 },
-      { category: 'Transport', amount: 420.50, percentage: 17 },
-      { category: 'Shopping', amount: 380.75, percentage: 16 },
-      { category: 'Entertainment', amount: 290.00, percentage: 12 },
-      { category: 'Utilities', amount: 250.00, percentage: 10 },
-      { category: 'Other', amount: 229.25, percentage: 10 }
-    ]
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <span className="loading loading-spinner loading-lg"></span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="alert alert-error">
+          <span>Failed to load dashboard data. Please try again.</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="alert alert-info">
+          <span>No dashboard data available.</span>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -37,7 +40,7 @@ export default function DashboardPage() {
       {/* Welcome Section */}
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-base-content mb-2">Welcome back!</h2>
-        <p className="text-base-content/70">Here's your financial overview for today.</p>
+        <p className="text-base-content/70">Here&apos;s your financial overview for today.</p>
       </div>
 
       {/* Asset Overview Cards */}
@@ -46,7 +49,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-base-content/70 text-sm">Total Assets</p>
-              <p className="text-2xl font-bold text-base-content">${mockData.totalAssets.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-base-content">${dashboardData.totalAssets.toLocaleString()}</p>
             </div>
             <div className="bg-primary/10 p-3 rounded-full">
               <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -60,7 +63,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-base-content/70 text-sm">Monthly Income</p>
-              <p className="text-2xl font-bold text-success">${mockData.monthlyIncome.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-success">${dashboardData.monthlyIncome.toLocaleString()}</p>
             </div>
             <div className="bg-success/10 p-3 rounded-full">
               <svg className="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -74,7 +77,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-base-content/70 text-sm">Monthly Expenses</p>
-              <p className="text-2xl font-bold text-error">${mockData.monthlyExpenses.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-error">${dashboardData.monthlyExpenses.toLocaleString()}</p>
             </div>
             <div className="bg-error/10 p-3 rounded-full">
               <svg className="w-6 h-6 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,7 +95,7 @@ export default function DashboardPage() {
           <div className="bg-base-100 rounded-xl p-6 shadow-lg">
             <h3 className="text-xl font-bold text-base-content mb-6">Account Balances</h3>
             <div className="space-y-4">
-              {mockData.accountBalances.map((account, index) => (
+              {dashboardData.accountBalances.map((account, index) => (
                 <div key={index} className="flex items-center justify-between p-4 bg-base-200 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <div className={`p-2 rounded-full ${
@@ -127,7 +130,7 @@ export default function DashboardPage() {
           <div className="bg-base-100 rounded-xl p-6 shadow-lg">
             <h3 className="text-xl font-bold text-base-content mb-6">Category Spending</h3>
             <div className="space-y-4">
-              {mockData.categorySpending.map((category, index) => (
+              {dashboardData.categorySpending.map((category, index) => (
                 <div key={index} className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-base-content">{category.category}</span>
@@ -165,7 +168,7 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {mockData.recentTransactions.map((transaction) => (
+                {dashboardData.recentTransactions.map((transaction) => (
                   <tr key={transaction.id}>
                     <td>
                       <div className="font-medium text-base-content">{transaction.description}</div>
