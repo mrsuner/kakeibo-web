@@ -1,6 +1,7 @@
 'use client'
 
 import { useGetDashboardQuery } from '@/lib/store/api'
+import TransactionCard from '@/components/domain/transaction/transaction-card'
 
 export default function DashboardPage() {
   const { data: dashboardData, error, isLoading } = useGetDashboardQuery()
@@ -157,37 +158,32 @@ export default function DashboardPage() {
             <a href="/dashboard/transactions" className="btn btn-outline btn-primary btn-sm">View All</a>
           </div>
           
-          <div className="overflow-x-auto">
-            <table className="table table-zebra w-full">
-              <thead>
-                <tr>
-                  <th>Description</th>
-                  <th>Category</th>
-                  <th>Date</th>
-                  <th className="text-right">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dashboardData.recentTransactions.map((transaction) => (
-                  <tr key={transaction.id}>
-                    <td>
-                      <div className="font-medium text-base-content">{transaction.description}</div>
-                    </td>
-                    <td>
-                      <span className="badge badge-outline">{transaction.category}</span>
-                    </td>
-                    <td className="text-base-content/70">{transaction.date}</td>
-                    <td className="text-right">
-                      <span className={`font-semibold ${
-                        transaction.type === 'income' ? 'text-success' : 'text-error'
-                      }`}>
-                        {transaction.type === 'income' ? '+' : ''}${Math.abs(transaction.amount).toLocaleString()}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {dashboardData.recentTransactions.map((transaction) => (
+              <TransactionCard
+                key={transaction.id}
+                transaction={{
+                  id: transaction.id,
+                  description: transaction.description,
+                  amount: Math.abs(transaction.amount),
+                  currency_code: 'USD',
+                  flow_type: transaction.type as 'income' | 'expense',
+                  transaction_at: transaction.date,
+                  category: transaction.category ? {
+                    id: '1',
+                    name: transaction.category,
+                    icon: undefined
+                  } : undefined,
+                  account: undefined,
+                  tags: undefined,
+                  files: undefined,
+                  balance_after: undefined,
+                  converted_amount: undefined,
+                  necessity_rating: undefined
+                }}
+                onClick={() => window.location.href = `/dashboard/transactions/${transaction.id}`}
+              />
+            ))}
           </div>
         </div>
       </div>

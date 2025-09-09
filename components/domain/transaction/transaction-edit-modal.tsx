@@ -23,8 +23,8 @@ interface EditFormData {
   date: string
   tags: string
   necessityRating: number
-  category_id: number
-  account_id: number
+  category_id: string
+  account_id: string
 }
 
 export default function TransactionEditModal({ 
@@ -41,8 +41,8 @@ export default function TransactionEditModal({
     date: new Date().toISOString().split('T')[0],
     tags: '',
     necessityRating: 6,
-    category_id: 0,
-    account_id: 0,
+    category_id: '',
+    account_id: '',
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState('')
@@ -73,8 +73,8 @@ export default function TransactionEditModal({
         date: transactionDate,
         tags: tagsString,
         necessityRating: transaction.necessity_rating || 6,
-        category_id: transaction.category?.id ? Number(transaction.category.id) : 0,
-        account_id: transaction.account?.id ? Number(transaction.account.id) : 0,
+        category_id: transaction.category?.id ? String(transaction.category.id) : '',
+        account_id: transaction.account?.id ? String(transaction.account.id) : '',
       })
     }
   }, [transaction])
@@ -270,11 +270,11 @@ export default function TransactionEditModal({
                 <select
                   className="select select-bordered select-lg focus:select-primary"
                   value={formData.category_id}
-                  onChange={(e) => handleInputChange('category_id', Number(e.target.value))}
+                  onChange={(e) => handleInputChange('category_id', e.target.value)}
                   disabled={isSubmitting}
                   required
                 >
-                  <option value={0} disabled>Select a category</option>
+                  <option value="" disabled>Select a category</option>
                   {categories?.map((category) => (
                     <option key={category.id} value={category.id}>
                       {category.icon} {category.name}
@@ -292,11 +292,11 @@ export default function TransactionEditModal({
                 <select
                   className="select select-bordered select-lg focus:select-primary"
                   value={formData.account_id}
-                  onChange={(e) => handleInputChange('account_id', Number(e.target.value))}
+                  onChange={(e) => handleInputChange('account_id', e.target.value)}
                   disabled={isSubmitting}
                   required
                 >
-                  <option value={0} disabled>Select an account</option>
+                  <option value="" disabled>Select an account</option>
                   {accounts?.map((account) => (
                     <option key={account.id} value={account.id}>
                       {account.name}

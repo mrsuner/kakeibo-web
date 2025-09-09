@@ -93,8 +93,8 @@ export interface CreateTransactionDto {
   type: 'income' | 'expense'
   amount: number
   description: string
-  category_id: number
-  account_id: number
+  category_id: string
+  account_id: string
   date: string
   tags?: string
   necessityRating?: number
@@ -105,8 +105,8 @@ export interface UpdateTransactionDto {
   type?: 'income' | 'expense'
   amount?: number
   description?: string
-  category_id?: number
-  account_id?: number
+  category_id?: string
+  account_id?: string
   date?: string
   tags?: string
   necessityRating?: number
@@ -114,8 +114,8 @@ export interface UpdateTransactionDto {
 }
 
 export interface GetTransactionsParams {
-  account_id?: number
-  category_id?: number
+  account_id?: string
+  category_id?: string
   type?: 'income' | 'expense'
   search?: string
   sort_by?: 'transaction_at' | 'amount'
