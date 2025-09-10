@@ -2,85 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import AccountsTab from './components/AccountsTab'
-import CategoriesTabWithAPI from './components/CategoriesTabWithAPI'
 import NotificationsTab from './components/NotificationsTab'
 import PrivacyTab from './components/PrivacyTab'
 
-interface Account {
-  id: number
-  name: string
-  type: string
-  balance: number
-  isActive: boolean
-  description?: string
-  creditLimit?: number
-  billingCycleDay?: number
-  paymentDueDay?: number
-}
-
-interface Category {
-  id: number
-  name: string
-  type: 'income' | 'expense'
-  color: string
-  isActive: boolean
-  icon?: string
-  budget?: number
-  budgetPeriod?: string
-}
 
 export default function SettingsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [activeTab, setActiveTab] = useState('accounts')
+  const [activeTab, setActiveTab] = useState('notifications')
   const [message, setMessage] = useState('')
-
-  // Mock data with extended Account interface
-  const [accounts, setAccounts] = useState<Account[]>([
-    { 
-      id: 1, 
-      name: 'Checking Account', 
-      type: 'bank', 
-      balance: 8450.25, 
-      isActive: true,
-      description: 'Primary checking account for daily expenses'
-    },
-    { 
-      id: 2, 
-      name: 'Savings Account', 
-      type: 'bank', 
-      balance: 6200.00, 
-      isActive: true,
-      description: 'Emergency fund and long-term savings'
-    },
-    { 
-      id: 3, 
-      name: 'Cash', 
-      type: 'cash', 
-      balance: 1100.25, 
-      isActive: true 
-    },
-    { 
-      id: 4, 
-      name: 'Old Credit Card', 
-      type: 'credit-card', 
-      balance: -250.00, 
-      isActive: false,
-      creditLimit: 2000.00,
-      billingCycleDay: 15,
-      paymentDueDay: 5
-    }
-  ])
-
-  // Mock data with extended Category interface
-  const [categories, setCategories] = useState<Category[]>([
-    { id: 1, name: 'Food', type: 'expense', color: '#ea580c', isActive: true, icon: '🍔', budget: 500, budgetPeriod: 'monthly' },
-    { id: 2, name: 'Transport', type: 'expense', color: '#2563eb', isActive: true, icon: '🚗', budget: 200, budgetPeriod: 'monthly' },
-    { id: 3, name: 'Shopping', type: 'expense', color: '#7c3aed', isActive: true, icon: '🛒' },
-    { id: 4, name: 'Salary', type: 'income', color: '#16a34a', isActive: true, icon: '💼', budget: 5000, budgetPeriod: 'monthly' },
-    { id: 5, name: 'Freelance', type: 'income', color: '#0891b2', isActive: true, icon: '💰' }
-  ])
 
   const [notifications, setNotifications] = useState({
     emailTransactions: true,
@@ -98,7 +28,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const tab = searchParams.get('tab')
-    const validTabs = ['accounts', 'categories', 'notifications', 'privacy']
+    const validTabs = ['notifications', 'privacy']
     if (tab && validTabs.includes(tab)) {
       setActiveTab(tab)
     }
@@ -111,55 +41,6 @@ export default function SettingsPage() {
     router.push(url.pathname + url.search, { scroll: false })
   }
 
-  const handleAccountToggle = (accountId: number) => {
-    setAccounts(prev => prev.map(account => 
-      account.id === accountId 
-        ? { ...account, isActive: !account.isActive }
-        : account
-    ))
-    setMessage('Account status updated')
-    setTimeout(() => setMessage(''), 3000)
-  }
-
-  const handleAccountUpdate = (updatedAccount: Account) => {
-    setAccounts(prev => prev.map(account => 
-      account.id === updatedAccount.id ? updatedAccount : account
-    ))
-    setMessage('Account updated successfully')
-    setTimeout(() => setMessage(''), 3000)
-  }
-
-  const handleAccountAdd = (newAccount: Omit<Account, 'id'>) => {
-    const id = Math.max(...accounts.map(a => a.id)) + 1
-    setAccounts(prev => [...prev, { ...newAccount, id }])
-    setMessage('Account added successfully')
-    setTimeout(() => setMessage(''), 3000)
-  }
-
-  const handleCategoryToggle = (categoryId: number) => {
-    setCategories(prev => prev.map(category => 
-      category.id === categoryId 
-        ? { ...category, isActive: !category.isActive }
-        : category
-    ))
-    setMessage('Category status updated')
-    setTimeout(() => setMessage(''), 3000)
-  }
-
-  const handleCategoryUpdate = (updatedCategory: Category) => {
-    setCategories(prev => prev.map(category => 
-      category.id === updatedCategory.id ? updatedCategory : category
-    ))
-    setMessage('Category updated successfully')
-    setTimeout(() => setMessage(''), 3000)
-  }
-
-  const handleCategoryAdd = (newCategory: Omit<Category, 'id'>) => {
-    const id = Math.max(...categories.map(c => c.id)) + 1
-    setCategories(prev => [...prev, { ...newCategory, id }])
-    setMessage('Category added successfully')
-    setTimeout(() => setMessage(''), 3000)
-  }
 
   const handleNotificationChange = (key: string, value: boolean) => {
     setNotifications(prev => ({ ...prev, [key]: value }))
@@ -195,8 +76,6 @@ export default function SettingsPage() {
   }
 
   const tabs = [
-    { id: 'accounts', name: 'Accounts', icon: '🏦' },
-    { id: 'categories', name: 'Categories', icon: '🏷️' },
     { id: 'notifications', name: 'Notifications', icon: '🔔' },
     { id: 'privacy', name: 'Privacy & Security', icon: '🔒' }
   ]
@@ -214,7 +93,7 @@ export default function SettingsPage() {
           </button>
           <div>
             <h1 className="text-3xl font-bold text-base-content">Settings</h1>
-            <p className="text-base-content/70 mt-1">Manage your accounts, categories, and preferences</p>
+            <p className="text-base-content/70 mt-1">Manage your notifications and privacy preferences</p>
           </div>
         </div>
       </div>
@@ -256,16 +135,6 @@ export default function SettingsPage() {
         <div className="lg:col-span-3">
           <div className="bg-base-100 rounded-xl shadow-lg p-8">
             
-            {/* Accounts Tab */}
-            {activeTab === 'accounts' && (
-              <AccountsTab />
-            )}
-
-            {/* Categories Tab */}
-            {activeTab === 'categories' && (
-              <CategoriesTabWithAPI />
-            )}
-
             {/* Notifications Tab */}
             {activeTab === 'notifications' && (
               <NotificationsTab
