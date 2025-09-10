@@ -1,0 +1,9 @@
+'use client'
+
+export function AccountsLoading() {
+  return (
+    <div className="flex justify-center items-center p-8">
+      <span className="loading loading-spinner loading-lg"></span>
+    </div>
+  )
+}
