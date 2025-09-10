@@ -1,9 +1,16 @@
 import { baseApi } from '../baseApi'
 
+export type AccountType = 
+  | 'cash' 
+  | 'savings_account' 
+  | 'debit_card' 
+  | 'credit_card' 
+  | 'e_wallet'
+
 export interface Account {
   id: number
   name: string
-  type: string
+  type: AccountType
   balance: number
   isActive: boolean
   isDefault?: boolean
@@ -15,23 +22,23 @@ export interface Account {
 
 export interface CreateAccountRequest {
   name: string
-  type: string
+  type: AccountType
   balance: number
   description?: string
-  creditLimit?: number
-  billingCycleDay?: number
-  paymentDueDay?: number
+  credit_limit?: number
+  billing_cycle_day?: number
+  payment_due_day?: number
   isDefault?: boolean
 }
 
 export interface UpdateAccountRequest {
   name?: string
-  type?: string
+  type?: AccountType
   balance?: number
   description?: string
-  creditLimit?: number
-  billingCycleDay?: number
-  paymentDueDay?: number
+  credit_limit?: number
+  billing_cycle_day?: number
+  payment_due_day?: number
   isDefault?: boolean
 }
 

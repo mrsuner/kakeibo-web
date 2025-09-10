@@ -24,8 +24,9 @@ export default function AccountsTab() {
 
   const getAccountTypeIcon = (type: string) => {
     switch (type) {
-      case 'bank_account': return '🏦'
       case 'cash': return '💵'
+      case 'savings_account': return '🏦'
+      case 'debit_card': return '💳'
       case 'credit_card': return '💳'
       case 'e_wallet': return '📱'
       default: return '💰'
@@ -44,9 +45,9 @@ export default function AccountsTab() {
         type: updatedAccount.type,
         balance: updatedAccount.balance,
         description: updatedAccount.description,
-        creditLimit: updatedAccount.creditLimit,
-        billingCycleDay: updatedAccount.billingCycleDay,
-        paymentDueDay: updatedAccount.paymentDueDay,
+        credit_limit: updatedAccount.creditLimit,
+        billing_cycle_day: updatedAccount.billingCycleDay,
+        payment_due_day: updatedAccount.paymentDueDay,
       }).unwrap()
       setEditingAccount(null)
     } catch (error) {
@@ -61,9 +62,9 @@ export default function AccountsTab() {
         type: newAccount.type,
         balance: newAccount.balance,
         description: newAccount.description,
-        creditLimit: newAccount.creditLimit,
-        billingCycleDay: newAccount.billingCycleDay,
-        paymentDueDay: newAccount.paymentDueDay,
+        credit_limit: newAccount.creditLimit,
+        billing_cycle_day: newAccount.billingCycleDay,
+        payment_due_day: newAccount.paymentDueDay,
       }).unwrap()
       setShowAddModal(false)
     } catch (error) {

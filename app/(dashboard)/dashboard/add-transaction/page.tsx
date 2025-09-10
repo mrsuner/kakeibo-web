@@ -150,14 +150,14 @@ export default function AddTransactionPage() {
 
           {/* Transaction Type */}
           <div
-            className={`bg-base-200/50 rounded-xl p-6 ${isSubmitting ? "pointer-events-none opacity-50" : ""}`}
+            className={`bg-base-200/50 rounded-xl ${isSubmitting ? "pointer-events-none opacity-50" : ""}`}
           >
             <TransactionTypeSelector />
           </div>
 
           {/* Amount and Date */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-base-200/30 rounded-xl p-6">
+            <div className="bg-base-200/30 rounded-xl">
               <div className="form-control">
                 <label className="label pb-2">
                   <span className="label-text font-semibold">Amount *</span>
@@ -213,14 +213,14 @@ export default function AddTransactionPage() {
             </div>
 
             <div
-              className={`bg-base-200/30 rounded-xl p-6 ${isSubmitting ? "pointer-events-none opacity-50" : ""}`}
+              className={`bg-base-200/30 rounded-xl ${isSubmitting ? "pointer-events-none opacity-50" : ""}`}
             >
               <DatePicker />
             </div>
           </div>
 
           {/* Description */}
-          <div className="bg-base-200/30 rounded-xl p-6">
+          <div className="bg-base-200/30 rounded-xl">
             <div className="form-control">
               <label className="label pb-2">
                 <span className="label-text font-semibold">Description *</span>
@@ -240,31 +240,31 @@ export default function AddTransactionPage() {
           <div
             className={`grid grid-cols-1 lg:grid-cols-2 gap-6 ${isSubmitting ? "pointer-events-none opacity-50" : ""}`}
           >
-            <div className="bg-base-200/30 rounded-xl p-6">
+            <div className="bg-base-200/30 rounded-xl">
               <CategorySelectCard />
             </div>
-            <div className="bg-base-200/30 rounded-xl p-6">
+            <div className="bg-base-200/30 rounded-xl">
               <AccountSelectCard />
             </div>
           </div>
 
           {/* Tags */}
           <div
-            className={`bg-base-200/30 rounded-xl p-6 ${isSubmitting ? "pointer-events-none opacity-50" : ""}`}
+            className={`bg-base-200/30 rounded-xl ${isSubmitting ? "pointer-events-none opacity-50" : ""}`}
           >
             <TagInput />
           </div>
 
           {/* Necessity Rating (only for expenses) */}
           <div
-            className={`bg-base-200/30 rounded-xl p-6 ${isSubmitting ? "pointer-events-none opacity-50" : ""}`}
+            className={`bg-base-200/30 rounded-xl ${isSubmitting ? "pointer-events-none opacity-50" : ""}`}
           >
             <NecessityRating />
           </div>
 
           {/* File Upload */}
           <div
-            className={`bg-base-200/30 rounded-xl p-6 ${isSubmitting ? "pointer-events-none opacity-50" : ""}`}
+            className={`bg-base-200/30 rounded-xl ${isSubmitting ? "pointer-events-none opacity-50" : ""}`}
           >
             <FileUpload
               onFilesUploaded={(fileIds) => dispatch(setFileIds(fileIds))}

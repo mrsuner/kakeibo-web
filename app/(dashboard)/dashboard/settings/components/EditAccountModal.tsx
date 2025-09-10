@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { type Account } from '@/lib/store/features/accountApi'
+import { type Account, type AccountType } from '@/lib/store/features/accountApi'
 
 interface EditAccountModalProps {
   account: Account
@@ -12,7 +12,7 @@ interface EditAccountModalProps {
 export default function EditAccountModal({ account, onClose, onSave }: EditAccountModalProps) {
   const [formData, setFormData] = useState({
     name: '',
-    type: 'bank_account',
+    type: 'savings_account' as AccountType,
     balance: '',
     description: '',
     creditLimit: '',
@@ -25,10 +25,11 @@ export default function EditAccountModal({ account, onClose, onSave }: EditAccou
   const [isLoading, setIsLoading] = useState(false)
 
   const accountTypes = [
-    { value: 'bank_account', label: 'Bank Account', icon: '🏦' },
-    { value: 'cash', label: 'Cash', icon: '💵' },
-    { value: 'credit_card', label: 'Credit Card', icon: '💳' },
-    { value: 'e_wallet', label: 'E-Wallet', icon: '📱' }
+    { value: 'cash' as AccountType, label: 'Cash', icon: '💵' },
+    { value: 'savings_account' as AccountType, label: 'Savings Account', icon: '🏦' },
+    { value: 'debit_card' as AccountType, label: 'Debit Card', icon: '💳' },
+    { value: 'credit_card' as AccountType, label: 'Credit Card', icon: '💳' },
+    { value: 'e_wallet' as AccountType, label: 'E-Wallet', icon: '📱' }
   ]
 
   // Initialize form with account data

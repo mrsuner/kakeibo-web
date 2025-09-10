@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { type Account, type CreateAccountRequest } from '@/lib/store/features/accountApi'
+import { type Account, type CreateAccountRequest, type AccountType } from '@/lib/store/features/accountApi'
 
 interface AddAccountModalProps {
   onClose: () => void
@@ -11,7 +11,7 @@ interface AddAccountModalProps {
 export default function AddAccountModal({ onClose, onSave }: AddAccountModalProps) {
   const [formData, setFormData] = useState({
     name: '',
-    type: 'bank_account',
+    type: 'savings_account' as AccountType,
     balance: '',
     description: '',
     creditLimit: '',
@@ -24,10 +24,11 @@ export default function AddAccountModal({ onClose, onSave }: AddAccountModalProp
   const [isLoading, setIsLoading] = useState(false)
 
   const accountTypes = [
-    { value: 'bank_account', label: 'Bank Account', icon: '🏦' },
-    { value: 'cash', label: 'Cash', icon: '💵' },
-    { value: 'credit_card', label: 'Credit Card', icon: '💳' },
-    { value: 'e_wallet', label: 'E-Wallet', icon: '📱' }
+    { value: 'cash' as AccountType, label: 'Cash', icon: '💵' },
+    { value: 'savings_account' as AccountType, label: 'Savings Account', icon: '🏦' },
+    { value: 'debit_card' as AccountType, label: 'Debit Card', icon: '💳' },
+    { value: 'credit_card' as AccountType, label: 'Credit Card', icon: '💳' },
+    { value: 'e_wallet' as AccountType, label: 'E-Wallet', icon: '📱' }
   ]
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -95,9 +96,9 @@ export default function AddAccountModal({ onClose, onSave }: AddAccountModalProp
         balance: Number(formData.balance),
         description: formData.description.trim() || undefined,
         ...(formData.type === 'credit_card' && {
-          creditLimit: Number(formData.creditLimit),
-          billingCycleDay: formData.billingCycleDay ? Number(formData.billingCycleDay) : undefined,
-          paymentDueDay: formData.paymentDueDay ? Number(formData.paymentDueDay) : undefined
+          credit_limit: Number(formData.creditLimit),
+          billing_cycle_day: formData.billingCycleDay ? Number(formData.billingCycleDay) : undefined,
+          payment_due_day: formData.paymentDueDay ? Number(formData.paymentDueDay) : undefined
         })
       }
 

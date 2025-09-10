@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState, useId } from 'react'
+import { useState, useId, useEffect, useRef } from 'react'
 import { AuthWrapper } from '@/components/AuthWrapper'
 import { useAuth } from '@/lib/hooks/useAuth'
 
@@ -13,10 +13,24 @@ export default function DashboardLayout({
   const router = useRouter()
   const { user, logout } = useAuth()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isDesktopDropdownOpen, setIsDesktopDropdownOpen] = useState(false)
+  const [showSignOutModal, setShowSignOutModal] = useState(false)
   const drawerId = useId()
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const handleSignOut = () => {
+  const handleSignOutClick = () => {
+    setShowSignOutModal(true)
+    setIsDesktopDropdownOpen(false)
+    setIsMobileMenuOpen(false)
+  }
+
+  const confirmSignOut = () => {
+    setShowSignOutModal(false)
     logout()
+  }
+
+  const cancelSignOut = () => {
+    setShowSignOutModal(false)
   }
 
   const navigationItems = [
@@ -30,6 +44,21 @@ export default function DashboardLayout({
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false)
   }
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDesktopDropdownOpen(false)
+      }
+    }
+
+    if (isDesktopDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside)
+      }
+    }
+  }, [isDesktopDropdownOpen])
 
   return (
     <AuthWrapper requireAuth={true}>
@@ -170,7 +199,7 @@ export default function DashboardLayout({
                   <li>
                     <button
                       type="button"
-                      onClick={handleSignOut}
+                      onClick={handleSignOutClick}
                       className="text-base font-medium text-error hover:text-error/80"
                     >
                       Sign Out
@@ -217,8 +246,15 @@ export default function DashboardLayout({
                   </a>
 
                   {/* User Avatar - Desktop */}
-                  <div className="dropdown dropdown-end">
-                    <button className="btn btn-ghost btn-circle avatar" type="button">
+                  <div 
+                    ref={dropdownRef}
+                    className={`dropdown dropdown-end ${isDesktopDropdownOpen ? 'dropdown-open' : ''}`}
+                  >
+                    <button 
+                      className="btn btn-ghost btn-circle avatar" 
+                      type="button"
+                      onClick={() => setIsDesktopDropdownOpen(!isDesktopDropdownOpen)}
+                    >
                       <div className="w-8 rounded-full bg-primary text-primary-content flex items-center justify-center">
                         <span className="text-sm font-semibold">
                           {user?.name ? user.name.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || 'U'}
@@ -226,9 +262,30 @@ export default function DashboardLayout({
                       </div>
                     </button>
                     <ul className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
-                      <li><a href="/dashboard/profile">Profile</a></li>
-                      <li><a href="/dashboard/settings">Settings</a></li>
-                      <li><button type="button" onClick={handleSignOut}>Sign Out</button></li>
+                      <li>
+                        <a 
+                          href="/dashboard/profile"
+                          onClick={() => setIsDesktopDropdownOpen(false)}
+                        >
+                          Profile
+                        </a>
+                      </li>
+                      <li>
+                        <a 
+                          href="/dashboard/settings"
+                          onClick={() => setIsDesktopDropdownOpen(false)}
+                        >
+                          Settings
+                        </a>
+                      </li>
+                      <li>
+                        <button 
+                          type="button" 
+                          onClick={handleSignOutClick}
+                        >
+                          Sign Out
+                        </button>
+                      </li>
                     </ul>
                   </div>
                 </div>
@@ -240,6 +297,31 @@ export default function DashboardLayout({
           <main>
             {children}
           </main>
+        </div>
+
+        {/* Sign Out Confirmation Modal */}
+        <div className={`modal ${showSignOutModal ? 'modal-open' : ''}`}>
+          <div className="modal-box">
+            <h3 className="font-bold text-lg mb-4">Confirm Sign Out</h3>
+            <p className="mb-6">Are you sure you want to sign out? You will need to authenticate again to access your account.</p>
+            <div className="modal-action">
+              <button 
+                type="button"
+                className="btn btn-ghost"
+                onClick={cancelSignOut}
+              >
+                Cancel
+              </button>
+              <button 
+                type="button"
+                className="btn btn-error"
+                onClick={confirmSignOut}
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+          <div className="modal-backdrop" onClick={cancelSignOut}></div>
         </div>
       </div>
     </AuthWrapper>
