@@ -39,7 +39,7 @@ export default function TransactionEditModal({
     description: '',
     date: new Date().toISOString().split('T')[0],
     tags: '',
-    necessityRating: 6,
+    necessityRating: 3,
     category_id: '',
     account_id: '',
   })
@@ -81,7 +81,7 @@ export default function TransactionEditModal({
         description: transaction.description,
         date: transactionDate,
         tags: tagsString,
-        necessityRating: transaction.necessity_rating || 6,
+        necessityRating: transaction.necessity_rating || 3,
         category_id: transaction.category?.id ? String(transaction.category.id) : '',
         account_id: transaction.account?.id ? String(transaction.account.id) : '',
       })
@@ -175,7 +175,7 @@ export default function TransactionEditModal({
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Loading Overlay */}
           {isSubmitting && (
-            <div className="absolute inset-0 bg-base-100/80 backdrop-blur-sm rounded-lg flex items-center justify-center z-50">
+            <div className="absolute inset-0 bg-base-100/80 backdrop-blur-sm rounded-xl flex items-center justify-center z-50">
               <div className="bg-base-100 rounded-xl p-8 shadow-2xl flex items-center gap-4 border border-base-200">
                 <span className="loading loading-spinner loading-lg text-primary"></span>
                 <span className="text-base-content font-medium">Updating transaction...</span>
@@ -184,7 +184,7 @@ export default function TransactionEditModal({
           )}
 
           {/* Transaction Type */}
-          <div className="bg-base-200/50 rounded-xl p-6">
+          <div className={`bg-base-200/50 rounded-xl p-6 ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}>
             <div className="form-control">
               <label className="label pb-3">
                 <span className="label-text font-semibold text-lg">Transaction Type *</span>
@@ -228,6 +228,37 @@ export default function TransactionEditModal({
                     className="input input-bordered input-lg w-full pl-10 pr-4 focus:input-primary text-lg font-medium"
                     value={formData.amount}
                     onChange={(e) => handleInputChange('amount', e.target.value)}
+                    onKeyDown={(e) => {
+                      // Allow: backspace, delete, tab, escape, enter, arrow keys, home, end
+                      if (
+                        [
+                          "Backspace",
+                          "Delete",
+                          "Tab",
+                          "Escape",
+                          "Enter",
+                          "Home",
+                          "End",
+                          "ArrowLeft",
+                          "ArrowRight",
+                          "ArrowUp",
+                          "ArrowDown",
+                        ].includes(e.key)
+                      ) {
+                        return;
+                      }
+                      // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                      if (
+                        e.ctrlKey &&
+                        ["a", "c", "v", "x"].includes(e.key.toLowerCase())
+                      ) {
+                        return;
+                      }
+                      // Allow: numbers 0-9 and decimal point
+                      if (!/^[0-9.]$/.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
                     disabled={isSubmitting}
                     required
                   />
@@ -260,7 +291,7 @@ export default function TransactionEditModal({
               </label>
               <textarea
                 placeholder="What was this transaction for?"
-                className="textarea textarea-bordered textarea-lg h-24 focus:textarea-primary resize-none"
+                className="textarea textarea-bordered textarea-lg w-full h-24 focus:textarea-primary resize-none"
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 disabled={isSubmitting}
@@ -317,7 +348,7 @@ export default function TransactionEditModal({
           </div>
 
           {/* Tags */}
-          <div className="bg-base-200/30 rounded-xl p-6">
+          <div className={`bg-base-200/30 rounded-xl p-6 ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}>
             <div className="form-control">
               <label className="label pb-2">
                 <span className="label-text font-semibold">Tags</span>
@@ -339,7 +370,7 @@ export default function TransactionEditModal({
 
           {/* Necessity Rating (only for expenses) */}
           {formData.type === 'expense' && (
-            <div className="bg-base-200/30 rounded-xl p-6">
+            <div className={`bg-base-200/30 rounded-xl p-6 ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}>
               <div className="form-control">
                 <label className="label pb-3">
                   <span className="label-text font-semibold">Necessity Rating</span>
@@ -348,20 +379,20 @@ export default function TransactionEditModal({
                 <div className="flex items-center gap-6">
                   <Rating
                     style={{ maxWidth: 250 }}
-                    value={formData.necessityRating / 2}
-                    onChange={(value: number) => handleInputChange('necessityRating', value * 2)}
+                    value={formData.necessityRating}
+                    onChange={(value: number) => handleInputChange('necessityRating', value)}
                     halfFillMode="svg"
                     readOnly={isSubmitting}
-                    allowFraction
+                    allowFraction={false}
                     items={5}
                   />
                   <div className="text-sm text-base-content/70 min-w-[80px]">
-                    <span className="font-bold text-lg text-base-content">{formData.necessityRating}/10</span>
+                    <span className="font-bold text-lg text-base-content">{formData.necessityRating}/5</span>
                     <div className="text-xs mt-1">
-                      {formData.necessityRating <= 2 ? 'Essential' :
-                       formData.necessityRating <= 4 ? 'Important' :
-                       formData.necessityRating <= 6 ? 'Moderate' :
-                       formData.necessityRating <= 8 ? 'Optional' : 'Impulse'}
+                      {formData.necessityRating <= 1 ? 'Essential' :
+                       formData.necessityRating <= 2 ? 'Important' :
+                       formData.necessityRating <= 3 ? 'Moderate' :
+                       formData.necessityRating <= 4 ? 'Optional' : 'Impulse'}
                     </div>
                   </div>
                 </div>
@@ -384,36 +415,34 @@ export default function TransactionEditModal({
           )}
 
           {/* Submit Buttons */}
-          <div className="modal-action pt-8 border-t border-base-200">
-            <div className="flex gap-4 w-full">
-              <button
-                type="button"
-                onClick={onClose}
-                className="btn btn-outline btn-lg flex-1 hover:bg-base-200"
-                disabled={isSubmitting}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="btn btn-primary btn-lg flex-1"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <span className="loading loading-spinner loading-md"></span>
-                    Updating...
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    Update Transaction
-                  </>
-                )}
-              </button>
-            </div>
+          <div className="flex gap-4 pt-8 border-t border-base-200">
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn btn-outline btn-lg flex-1 hover:bg-base-200"
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary btn-lg flex-1"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <span className="loading loading-spinner loading-md"></span>
+                  Updating...
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Update {formData.type === 'expense' ? 'Expense' : 'Income'}
+                </>
+              )}
+            </button>
           </div>
         </form>
       </div>

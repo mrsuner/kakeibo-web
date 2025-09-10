@@ -19,6 +19,7 @@ import {
   useUpdateCategoryMutation,
   useCategoryStats,
 } from '@/features/categories'
+import ConfirmDeleteModal from '@/components/ui/confirm-delete-modal'
 
 export default function CategoriesPage() {
   const dispatch = useAppDispatch()
@@ -56,6 +57,8 @@ export default function CategoriesPage() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editing, setEditing] = useState<Category | null>(null)
   const [pendingDefaultId, setPendingDefaultId] = useState<number | null>(null)
+  const [deletingCategory, setDeletingCategory] = useState<Category | null>(null)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
   // Hooks
   const filteredCategories = useFilteredCategories(categories, filters)
@@ -74,13 +77,24 @@ export default function CategoriesPage() {
     setIsFormOpen(true)
   }
 
-  const handleDelete = async (category: Category) => {
-    if (confirm(`Delete category "${category.name}"? This cannot be undone.`)) {
-      try {
-        await deleteCategory(category.id).unwrap()
-      } catch (e) {
-        console.error(e)
-      }
+  const handleDelete = (category: Category) => {
+    setDeletingCategory(category)
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalOpen(false)
+    setDeletingCategory(null)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!deletingCategory) return
+    
+    try {
+      await deleteCategory(deletingCategory.id).unwrap()
+      handleCloseDeleteModal()
+    } catch (e) {
+      console.error('Failed to delete category:', e)
     }
   }
 
@@ -199,6 +213,16 @@ export default function CategoriesPage() {
           loading={isCreating || isUpdating}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Delete Category"
+        message={deletingCategory ? `Are you sure you want to delete the category "${deletingCategory.name}"? This action cannot be undone.` : ""}
+        isLoading={isDeleting}
+      />
     </div>
   )
 }

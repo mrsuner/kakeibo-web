@@ -192,7 +192,7 @@ export default function TransactionDetailsModal({
                     <p className="text-base-content/70 text-sm">Necessity Rating</p>
                     <div className="flex items-center space-x-2">
                       <div className="rating rating-sm">
-                        {[...Array(10)].map((_, i) => (
+                        {[...Array(5)].map((_, i) => (
                           <input
                             key={i}
                             type="radio"
@@ -202,7 +202,13 @@ export default function TransactionDetailsModal({
                           />
                         ))}
                       </div>
-                      <span className="font-medium">{transaction.necessity_rating}/10</span>
+                      <span className="font-medium">{transaction.necessity_rating}/5</span>
+                      <span className="text-xs text-base-content/60">
+                        ({transaction.necessity_rating <= 1 ? 'Essential' :
+                         transaction.necessity_rating <= 2 ? 'Important' :
+                         transaction.necessity_rating <= 3 ? 'Moderate' :
+                         transaction.necessity_rating <= 4 ? 'Optional' : 'Impulse'})
+                      </span>
                     </div>
                   </div>
                 )}
