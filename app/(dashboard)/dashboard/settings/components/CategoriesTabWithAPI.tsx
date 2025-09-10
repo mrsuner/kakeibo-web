@@ -15,7 +15,7 @@ import {
   type Category,
   type CreateCategoryDto,
   type UpdateCategoryDto
-} from '@/lib/store/features/categoryApi'
+} from '@/features/categories'
 
 interface CategoryForModal extends Category {
   budgetPeriod?: string | null

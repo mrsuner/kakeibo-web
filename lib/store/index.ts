@@ -5,6 +5,9 @@ import { fileBaseApi } from './fileBaseApi'
 import authReducer from './authSlice'
 import transactionFormReducer from './features/transactionFormSlice'
 
+// Import APIs to register them with baseApi
+import '../../features/categories/domain/categories.api'
+
 export const store = configureStore({
   reducer: {
     [baseApi.reducerPath]: baseApi.reducer,

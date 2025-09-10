@@ -1,75 +1,7 @@
-import { baseApi } from '../baseApi'
-import { z } from 'zod'
+import { baseApi } from '@/lib/store/baseApi'
+import type { Category, CreateCategoryDto, UpdateCategoryDto } from './categories.types'
 
-// Zod schemas for validation
-const CategorySchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  type: z.enum(['income', 'expense']),
-  color: z.string(),
-  isActive: z.boolean(),
-  icon: z.string().optional().nullable(),
-  budget: z.union([z.number(), z.string()]).optional().nullable().transform((val) => {
-    if (val === null || val === undefined) return null
-    return typeof val === 'string' ? parseFloat(val) : val
-  }),
-  budgetPeriod: z.string().optional().nullable(),
-  description: z.string().optional().nullable(),
-  hits: z.number().optional().default(0),
-  isDefault: z.boolean().optional().default(false),
-})
-
-const CategoriesResponseSchema = z.object({
-  meta: z.object({
-    code: z.number(),
-    message: z.string(),
-  }),
-  data: z.object({
-    categories: z.array(CategorySchema),
-  }),
-})
-
-const CategoryResponseSchema = z.object({
-  meta: z.object({
-    code: z.number(),
-    message: z.string(),
-  }),
-  data: z.object({
-    category: CategorySchema,
-  }),
-})
-
-// Types
-export type Category = z.infer<typeof CategorySchema>
-export type CategoriesResponse = z.infer<typeof CategoriesResponseSchema>
-export type CategoryResponse = z.infer<typeof CategoryResponseSchema>
-
-export interface CreateCategoryDto {
-  name: string
-  type: 'income' | 'expense'
-  color?: string
-  icon?: string
-  description?: string
-  budget?: number
-  budgetPeriod?: string
-  isActive?: boolean
-  isDefault?: boolean
-}
-
-export interface UpdateCategoryDto {
-  name?: string
-  type?: 'income' | 'expense'
-  color?: string
-  icon?: string
-  description?: string
-  budget?: number
-  budgetPeriod?: string
-  isActive?: boolean
-  isDefault?: boolean
-}
-
-// API slice
-export const categoryApi = baseApi.injectEndpoints({
+export const categoriesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getCategories: builder.query<Category[], { type?: 'income' | 'expense' }>({
       query: (params) => ({
@@ -209,7 +141,6 @@ export const categoryApi = baseApi.injectEndpoints({
   }),
 })
 
-// Export hooks for usage in components
 export const {
   useGetCategoriesQuery,
   useGetCategoryQuery,
@@ -219,4 +150,4 @@ export const {
   useDeleteCategoryMutation,
   useSetAsDefaultCategoryMutation,
   useGetDefaultCategoryQuery,
-} = categoryApi
+} = categoriesApi

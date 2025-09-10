@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import { useCreateTransactionMutation } from "@/lib/store/features/transactionApi";
-import { useGetDefaultCategoryQuery } from "@/lib/store/features/categoryApi";
+import { useGetDefaultCategoryQuery } from "@/features/categories";
 import { useGetDefaultAccountQuery } from "@/lib/store/features/accountApi";
 import {
   resetTransactionForm,

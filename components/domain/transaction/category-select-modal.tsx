@@ -2,9 +2,8 @@
 
 import { useEffect } from 'react'
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
-import { useGetCategoriesQuery } from '@/lib/store/features/categoryApi'
 import { setSelectedCategory, closeCategoryModal } from '@/lib/store/features/transactionFormSlice'
-import type { Category } from '@/lib/store/features/categoryApi'
+import { useGetCategoriesQuery, type Category } from '@/features/categories'
 
 interface CategorySelectModalProps {
   onCategorySelect?: (category: Category) => void

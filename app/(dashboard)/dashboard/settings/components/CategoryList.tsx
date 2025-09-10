@@ -1,6 +1,6 @@
 'use client'
 
-import { type Category } from '@/lib/store/features/categoryApi'
+import { type Category } from '@/features/categories'
 import CategoryCard from './CategoryCard'
 import EmptyState from './EmptyState'
 

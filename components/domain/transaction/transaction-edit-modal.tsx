@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
 import { useUpdateTransactionMutation } from '@/lib/store/features/transactionApi'
-import { useGetCategoriesQuery } from '@/lib/store/features/categoryApi'
+import { useGetCategoriesQuery } from '@/features/categories'
 import { useGetAccountsQuery } from '@/lib/store/features/accountApi'
 import { Transaction, TransactionCategory, TransactionAccount } from '@/lib/store/features/transactionApi'
 import { Rating } from '@smastrom/react-rating'
