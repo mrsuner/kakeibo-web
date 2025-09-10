@@ -1,30 +1,17 @@
 'use client'
 
-import { Transaction } from '@/lib/store/features/transactionApi'
-import { useEffect, useRef, useState } from 'react'
-import TransactionEditModal from './transaction-edit-modal'
+import { useParams, useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useGetTransactionQuery } from '@/lib/store/features/transactionApi'
+import TransactionEditModal from '@/components/domain/transaction/transaction-edit-modal'
 
-interface TransactionDetailsModalProps {
-  transaction: Transaction | null
-  isOpen: boolean
-  onClose: () => void
-}
-
-export default function TransactionDetailsModal({ 
-  transaction, 
-  isOpen, 
-  onClose 
-}: TransactionDetailsModalProps) {
-  const modalRef = useRef<HTMLDialogElement>(null)
+export default function TransactionShowPage() {
+  const params = useParams()
+  const router = useRouter()
+  const transactionId = params.transactionId as string
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
-  useEffect(() => {
-    if (isOpen && modalRef.current) {
-      modalRef.current.showModal()
-    } else if (!isOpen && modalRef.current) {
-      modalRef.current.close()
-    }
-  }, [isOpen])
+  const { data: transaction, error, isLoading } = useGetTransactionQuery(transactionId)
 
   const handleOpenEditModal = () => {
     setIsEditModalOpen(true)
@@ -35,12 +22,8 @@ export default function TransactionDetailsModal({
   }
 
   const handleEditSuccess = () => {
-    // Close edit modal and potentially refresh data
     setIsEditModalOpen(false)
-    // Note: The RTK Query will automatically refetch the data due to cache invalidation
   }
-
-  if (!transaction) return null
 
   const formatCurrency = (amount: number, currencyCode: string = 'USD') => {
     return new Intl.NumberFormat('en-US', {
@@ -81,15 +64,52 @@ export default function TransactionDetailsModal({
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <span className="loading loading-spinner loading-lg"></span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !transaction) {
+    return (
+      <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="alert alert-error mb-6">
+          <span>Transaction not found or failed to load. Please try again.</span>
+        </div>
+        <button 
+          onClick={() => router.push('/dashboard/transactions')} 
+          className="btn btn-outline"
+        >
+          ← Back to Transactions
+        </button>
+      </div>
+    )
+  }
+
   return (
-    <dialog 
-      ref={modalRef} 
-      className="modal"
-      onClose={onClose}
-    >
-      <div className="modal-box w-11/12 max-w-2xl">
+    <div className="max-w-4xl mx-auto px-6 py-8">
+      {/* Header with Navigation */}
+      <div className="flex items-center space-x-4 mb-8">
+        <button 
+          onClick={() => router.push('/dashboard/transactions')} 
+          className="btn btn-ghost btn-sm"
+        >
+          ← Back to Transactions
+        </button>
+        <div>
+          <h1 className="text-3xl font-bold text-base-content">Transaction Details</h1>
+          <p className="text-base-content/70 mt-1">View and manage transaction information</p>
+        </div>
+      </div>
+
+      {/* Transaction Details Card */}
+      <div className="bg-base-100 rounded-xl shadow-lg p-8">
         {/* Header */}
-        <div className="flex items-start justify-between mb-6">
+        <div className="flex items-start justify-between mb-8">
           <div className="flex items-center space-x-4">
             <div className={`p-3 rounded-full ${
               transaction.flow_type === 'income' 
@@ -118,65 +138,65 @@ export default function TransactionDetailsModal({
               )}
             </div>
             <div>
-              <h3 className="text-xl font-bold text-base-content">{transaction.description}</h3>
-              <p className="text-base-content/70">{transaction.category?.name || 'Uncategorized'}</p>
+              <h2 className="text-2xl font-bold text-base-content">{transaction.description}</h2>
+              <p className="text-base-content/70 text-lg">{transaction.category?.name || 'Uncategorized'}</p>
             </div>
           </div>
           <button 
-            className="btn btn-sm btn-circle btn-ghost" 
-            onClick={onClose}
+            className="btn btn-primary" 
+            onClick={handleOpenEditModal}
           >
-            ✕
+            Edit Transaction
           </button>
         </div>
 
         {/* Amount */}
-        <div className="text-center mb-8">
-          <p className={`text-4xl font-bold ${
+        <div className="text-center mb-8 p-6 bg-base-200 rounded-lg">
+          <p className={`text-5xl font-bold ${
             transaction.flow_type === 'income' ? 'text-success' : 'text-error'
           }`}>
             {transaction.flow_type === 'expense' ? '-' : '+'}
             {formatCurrency(transaction.amount, transaction.currency_code)}
           </p>
           {transaction.converted_amount && transaction.converted_amount !== transaction.amount && (
-            <p className="text-base-content/70 mt-2">
+            <p className="text-base-content/70 mt-3 text-lg">
               Converted: {formatCurrency(transaction.converted_amount, transaction.currency_code)}
             </p>
           )}
         </div>
 
-        {/* Transaction Details */}
-        <div className="space-y-6">
+        {/* Transaction Details Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Date and Time */}
-          <div className="bg-base-200 rounded-lg p-4">
-            <h4 className="font-semibold text-base-content mb-2">Transaction Date & Time</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-base-200 rounded-lg p-6">
+            <h3 className="font-semibold text-base-content mb-4 text-lg">Transaction Date & Time</h3>
+            <div className="space-y-4">
               <div>
                 <p className="text-base-content/70 text-sm">Date</p>
-                <p className="font-medium">{formatDate(transaction.transaction_at)}</p>
+                <p className="font-medium text-lg">{formatDate(transaction.transaction_at)}</p>
               </div>
               <div>
                 <p className="text-base-content/70 text-sm">Time</p>
-                <p className="font-medium">{formatTime(transaction.transaction_at)}</p>
+                <p className="font-medium text-lg">{formatTime(transaction.transaction_at)}</p>
               </div>
             </div>
           </div>
 
           {/* Account and Category */}
-          <div className="bg-base-200 rounded-lg p-4">
-            <h4 className="font-semibold text-base-content mb-2">Account & Category</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-base-200 rounded-lg p-6">
+            <h3 className="font-semibold text-base-content mb-4 text-lg">Account & Category</h3>
+            <div className="space-y-4">
               <div>
                 <p className="text-base-content/70 text-sm">Account</p>
-                <p className="font-medium">{transaction.account?.name || 'Unknown Account'}</p>
+                <p className="font-medium text-lg">{transaction.account?.name || 'Unknown Account'}</p>
               </div>
               <div>
                 <p className="text-base-content/70 text-sm">Category</p>
                 <div className="flex items-center space-x-2">
                   {transaction.category?.icon && (
-                    <span className="text-lg">{transaction.category.icon}</span>
+                    <span className="text-xl">{transaction.category.icon}</span>
                   )}
-                  <span className="font-medium">{transaction.category?.name || 'Uncategorized'}</span>
+                  <span className="font-medium text-lg">{transaction.category?.name || 'Uncategorized'}</span>
                 </div>
               </div>
             </div>
@@ -184,14 +204,14 @@ export default function TransactionDetailsModal({
 
           {/* Additional Info */}
           {(transaction.necessity_rating || transaction.balance_after !== null) && (
-            <div className="bg-base-200 rounded-lg p-4">
-              <h4 className="font-semibold text-base-content mb-2">Additional Information</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-base-200 rounded-lg p-6">
+              <h3 className="font-semibold text-base-content mb-4 text-lg">Additional Information</h3>
+              <div className="space-y-4">
                 {transaction.necessity_rating && (
                   <div>
                     <p className="text-base-content/70 text-sm">Necessity Rating</p>
-                    <div className="flex items-center space-x-2">
-                      <div className="rating rating-sm">
+                    <div className="flex items-center space-x-2 mt-2">
+                      <div className="rating rating-md">
                         {[...Array(10)].map((_, i) => (
                           <input
                             key={i}
@@ -202,14 +222,14 @@ export default function TransactionDetailsModal({
                           />
                         ))}
                       </div>
-                      <span className="font-medium">{transaction.necessity_rating}/10</span>
+                      <span className="font-medium text-lg">{transaction.necessity_rating}/10</span>
                     </div>
                   </div>
                 )}
                 {transaction.balance_after !== null && (
                   <div>
                     <p className="text-base-content/70 text-sm">Balance After</p>
-                    <p className="font-medium">
+                    <p className="font-medium text-lg">
                       {formatCurrency(transaction.balance_after, transaction.currency_code)}
                     </p>
                   </div>
@@ -220,13 +240,13 @@ export default function TransactionDetailsModal({
 
           {/* Tags */}
           {transaction.tags && transaction.tags.length > 0 && (
-            <div className="bg-base-200 rounded-lg p-4">
-              <h4 className="font-semibold text-base-content mb-2">Tags</h4>
+            <div className="bg-base-200 rounded-lg p-6">
+              <h3 className="font-semibold text-base-content mb-4 text-lg">Tags</h3>
               <div className="flex flex-wrap gap-2">
                 {transaction.tags.map((tag) => (
                   <div
                     key={tag.id}
-                    className="badge badge-outline"
+                    className="badge badge-lg badge-outline"
                     style={tag.color ? { borderColor: tag.color, color: tag.color } : undefined}
                   >
                     {tag.name}
@@ -235,38 +255,25 @@ export default function TransactionDetailsModal({
               </div>
             </div>
           )}
+        </div>
 
-          {/* Files */}
-          {transaction.files && transaction.files.length > 0 && (
-            <div className="bg-base-200 rounded-lg p-4">
-              <h4 className="font-semibold text-base-content mb-2">Attachments</h4>
-              <div className="space-y-2">
-                {transaction.files.map((file) => (
-                  <div key={file.id} className="flex items-center space-x-3 p-2 bg-base-100 rounded">
-                    <svg className="w-5 h-5 text-base-content/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <span className="font-medium">{file.filename || `File ${file.file_id}`}</span>
-                  </div>
-                ))}
-              </div>
+        {/* Files */}
+        {transaction.files && transaction.files.length > 0 && (
+          <div className="bg-base-200 rounded-lg p-6 mt-6">
+            <h3 className="font-semibold text-base-content mb-4 text-lg">Attachments</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {transaction.files.map((file) => (
+                <div key={file.id} className="flex items-center space-x-3 p-3 bg-base-100 rounded-lg">
+                  <svg className="w-6 h-6 text-base-content/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span className="font-medium">{file.filename || `File ${file.file_id}`}</span>
+                </div>
+              ))}
             </div>
-          )}
-        </div>
-
-        {/* Action Buttons */}
-        <div className="modal-action">
-          <button className="btn btn-outline" onClick={onClose}>
-            Close
-          </button>
-          <button className="btn btn-primary" onClick={handleOpenEditModal}>
-            Edit Transaction
-          </button>
-        </div>
+          </div>
+        )}
       </div>
-      <form method="dialog" className="modal-backdrop">
-        <button onClick={onClose}>close</button>
-      </form>
 
       {/* Transaction Edit Modal */}
       <TransactionEditModal
@@ -275,6 +282,6 @@ export default function TransactionDetailsModal({
         onClose={handleCloseEditModal}
         onSuccess={handleEditSuccess}
       />
-    </dialog>
+    </div>
   )
 }

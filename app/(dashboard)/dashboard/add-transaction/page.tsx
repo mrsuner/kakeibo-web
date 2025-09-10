@@ -25,12 +25,14 @@ import TagInput from "@/components/domain/transaction/tag-input";
 import NecessityRating from "@/components/domain/transaction/necessity-rating";
 import DatePicker from "@/components/domain/transaction/date-picker";
 import FileUpload from "@/components/domain/transaction/file-upload";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 export default function AddTransactionPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { formData, selectedAccount, selectedCategory, message, isSubmitting } =
     useAppSelector((state) => state.transactionForm);
+  const { user } = useAuth();
 
   // API hooks
   const [createTransaction] = useCreateTransactionMutation();
@@ -61,6 +63,11 @@ export default function AddTransactionPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!user) {
+      dispatch(setMessage("User not authenticated"));
+      return;
+    }
+
     if (
       !formData.amount ||
       !formData.description ||
@@ -86,6 +93,7 @@ export default function AddTransactionPage() {
         description: formData.description,
         category_id: selectedCategory.id,
         account_id: selectedAccount.id,
+        currency_id: user.base_currency_id,
         date: formData.date,
         tags: formData.tags.length > 0 ? formData.tags.join(",") : undefined,
         necessityRating:

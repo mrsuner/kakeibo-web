@@ -25,9 +25,13 @@ export default function AccountsPage() {
   const getAccountTypeIcon = (type: string) => {
     switch (type) {
       case 'cash': return '💵'
-      case 'savings_account': return '🏦'
-      case 'debit_card': return '💳'
-      case 'credit_card': return '💳'
+      case 'savings_account':
+      case 'savings': return '🏦'
+      case 'debit_card':
+      case 'debit-card': return '💳'
+      case 'credit_card':
+      case 'credit-card': return '💳'
+      case 'checking': return '🏦'
       case 'e_wallet': return '📱'
       default: return '💰'
     }
@@ -72,7 +76,7 @@ export default function AccountsPage() {
     }
   }
 
-  const handleAccountToggle = async (accountId: number) => {
+  const handleAccountToggle = async (accountId: string) => {
     try {
       await toggleAccount(accountId).unwrap()
     } catch (error) {
@@ -170,7 +174,7 @@ export default function AccountsPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="text-xl sm:text-2xl font-bold text-base-content">
-                      ${account.balance.toLocaleString()}
+                      {account.baseCurrencyCode ?? ''} {Number(account.balance ?? 0).toLocaleString()}
                     </div>
                     {account.type === 'credit_card' && account.creditLimit && (
                       <div className="text-xs sm:text-sm text-base-content/60 mt-1">

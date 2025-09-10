@@ -10,8 +10,8 @@ export interface User {
   phone_verified_at?: string
   gender?: string
   avatar?: string
-  base_currency_id?: number
-  base_currency?: string
+  base_currency_id: string
+  base_currency: string
   subscription_plan: string
   timezone: string
   language: string

@@ -95,6 +95,7 @@ export interface CreateTransactionDto {
   description: string
   category_id: string
   account_id: string
+  currency_id: string
   date: string
   tags?: string
   necessityRating?: number

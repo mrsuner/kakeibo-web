@@ -1,11 +1,10 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
 import { useUpdateTransactionMutation } from '@/lib/store/features/transactionApi'
 import { useGetCategoriesQuery } from '@/features/categories'
 import { useGetAccountsQuery } from '@/lib/store/features/accountApi'
-import { Transaction, TransactionCategory, TransactionAccount } from '@/lib/store/features/transactionApi'
+import { Transaction } from '@/lib/store/features/transactionApi'
 import { Rating } from '@smastrom/react-rating'
 import '@smastrom/react-rating/style.css'
 
@@ -62,8 +61,18 @@ export default function TransactionEditModal({
 
   // Initialize form data when transaction changes
   useEffect(() => {
-    if (transaction) {
-      const transactionDate = new Date(transaction.transaction_at).toISOString().split('T')[0]
+    if (transaction && transaction.transaction_at) {
+      // Safely parse the date
+      let transactionDate = new Date().toISOString().split('T')[0]
+      try {
+        const parsedDate = new Date(transaction.transaction_at)
+        if (!isNaN(parsedDate.getTime())) {
+          transactionDate = parsedDate.toISOString().split('T')[0]
+        }
+      } catch {
+        console.warn('Failed to parse transaction date:', transaction.transaction_at)
+      }
+      
       const tagsString = transaction.tags?.map(tag => tag.name).join(', ') || ''
       
       setFormData({

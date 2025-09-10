@@ -1,9 +1,12 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useGetDashboardQuery } from '@/lib/store/api'
 import TransactionCard from '@/components/domain/transaction/transaction-card'
 
 export default function DashboardPage() {
+  const router = useRouter()
   const { data: dashboardData, error, isLoading } = useGetDashboardQuery()
 
   if (isLoading) {
@@ -155,7 +158,7 @@ export default function DashboardPage() {
         <div className="bg-base-100 rounded-xl p-6 shadow-lg">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-xl font-bold text-base-content">Recent Transactions</h3>
-            <a href="/dashboard/transactions" className="btn btn-outline btn-primary btn-sm">View All</a>
+            <Link href="/dashboard/transactions" className="btn btn-outline btn-primary btn-sm">View All</Link>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -181,7 +184,7 @@ export default function DashboardPage() {
                   converted_amount: undefined,
                   necessity_rating: undefined
                 }}
-                onClick={() => window.location.href = `/dashboard/transactions/${transaction.id}`}
+                onClick={() => router.push(`/dashboard/transactions/${transaction.id}`)}
               />
             ))}
           </div>
