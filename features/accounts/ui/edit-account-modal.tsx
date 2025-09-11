@@ -52,9 +52,9 @@ export function EditAccountModal({ account, onClose, onSave }: EditAccountModalP
     // Initialize balances from account data - ensure currency_id is properly formatted
     const accountBalances = account.balances?.length ? account.balances.map(b => ({
       id: crypto.randomUUID(),
-      currency_id: String(b.currency_id), // Ensure it's a string to match dropdown values
+      currency_id: String((b as any).currency_id ?? b.currencyId), // Use normalized currencyId from API
       balance: String(b.balance),
-      average_cost: b.average_cost ? String(b.average_cost) : ''
+      average_cost: (b as any).average_cost ? String((b as any).average_cost) : ''
     })) : [{ 
       id: crypto.randomUUID(), 
       currency_id: '', // Empty by default, user needs to select
@@ -103,9 +103,9 @@ export function EditAccountModal({ account, onClose, onSave }: EditAccountModalP
     if (currencies.length > 0 && account.balances?.length) {
       const accountBalances = account.balances.map(b => ({
         id: crypto.randomUUID(),
-        currency_id: String(b.currency_id),
+        currency_id: String((b as any).currency_id ?? b.currencyId),
         balance: String(b.balance),
-        average_cost: b.average_cost ? String(b.average_cost) : ''
+        average_cost: (b as any).average_cost ? String((b as any).average_cost) : ''
       }))
       
       // Only update if the current balances don't already have the right currency_ids
