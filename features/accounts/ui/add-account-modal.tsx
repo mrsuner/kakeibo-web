@@ -9,7 +9,7 @@ interface AddAccountModalProps {
   onSave: (account: CreateAccountRequest) => void
 }
 
-export default function AddAccountModal({ onClose, onSave }: AddAccountModalProps) {
+export function AddAccountModal({ onClose, onSave }: AddAccountModalProps) {
   const [formData, setFormData] = useState({
     name: '',
     type: 'savings_account' as AccountType,
@@ -19,7 +19,9 @@ export default function AddAccountModal({ onClose, onSave }: AddAccountModalProp
     paymentDueDay: '',
     isActive: true
   })
-  const [balances, setBalances] = useState<Array<{ id: string; currency_id: string; balance: string; average_cost?: string }>>([])
+  const [balances, setBalances] = useState<Array<{ id: string; currency_id: string; balance: string; average_cost?: string }>>([
+    { id: crypto.randomUUID(), currency_id: '', balance: '', average_cost: '' }
+  ])
 
   const { data: currencies = [] } = useGetCurrenciesQuery()
 
@@ -39,7 +41,7 @@ export default function AddAccountModal({ onClose, onSave }: AddAccountModalProp
       ...prev,
       [field]: value
     }))
-    
+
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({
@@ -93,7 +95,7 @@ export default function AddAccountModal({ onClose, onSave }: AddAccountModalProp
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validateForm()) return
 
     setIsLoading(true)
@@ -138,127 +140,83 @@ export default function AddAccountModal({ onClose, onSave }: AddAccountModalProp
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Account Name */}
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-medium">Account Name *</span>
-            </label>
-            <input
-              type="text"
-              placeholder="e.g., Chase Checking"
-              className={`input input-bordered ${errors.name ? 'input-error' : 'focus:input-primary'}`}
-              value={formData.name}
-              onChange={(e) => handleInputChange('name', e.target.value)}
-            />
-            {errors.name && <label className="label"><span className="label-text-alt text-error">{errors.name}</span></label>}
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic Account Information */}
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold text-base-content">Basic Information</h4>
 
-          {/* Account Type */}
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-medium">Account Type *</span>
-            </label>
-            <select 
-              className="select select-bordered focus:select-primary"
-              value={formData.type}
-              onChange={(e) => handleInputChange('type', e.target.value)}
-            >
-              {accountTypes.map(type => (
-                <option key={type.value} value={type.value}>
-                  {type.icon} {type.label}
-                </option>
-              ))}
-            </select>
-          </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Account Name */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Account Name *</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g., Chase Checking"
+                  className={`input input-bordered ${errors.name ? 'input-error' : 'focus:input-primary'}`}
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                />
+                {errors.name && <label className="label"><span className="label-text-alt text-error">{errors.name}</span></label>}
+              </div>
 
-          {/* Balances (multi-currency) */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="label">
-                <span className="label-text font-medium">Initial Balances (optional)</span>
-              </label>
-              <button
-                type="button"
-                className="btn btn-outline btn-sm"
-                onClick={() => setBalances(prev => [...prev, { id: crypto.randomUUID(), currency_id: '', balance: '', average_cost: '' }])}
-              >
-                + Add currency
-              </button>
+              {/* Account Type */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Account Type *</span>
+                </label>
+                <select
+                  className="select select-bordered focus:select-primary"
+                  value={formData.type}
+                  onChange={(e) => handleInputChange('type', e.target.value)}
+                >
+                  {accountTypes.map(type => (
+                    <option key={type.value} value={type.value}>
+                      {type.icon} {type.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div className="grid grid-cols-1 gap-3">
-              {balances.map((b, idx) => (
-                <div key={b.id} className="card card-bordered shadow-sm border-base-300">
-                  <div className="card-body p-4 gap-3">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      {/* Currency */}
-                      <div className="form-control">
-                        <label className="label"><span className="label-text">Currency *</span></label>
-                        <select
-                          className={`select select-bordered ${errors[`balances.${idx}.currency_id`] ? 'select-error' : 'focus:select-primary'}`}
-                          value={b.currency_id}
-                          onChange={(e) => setBalances(prev => prev.map((x,i) => i===idx ? { ...x, currency_id: e.target.value } : x))}
-                        >
-                          <option value="">Select currency</option>
-                          {currencies.map(c => (
-                            <option key={c.id} value={String(c.id)}>{c.code} — {c.name}</option>
-                          ))}
-                        </select>
-                        {errors[`balances.${idx}.currency_id`] && (
-                          <span className="text-xs text-error">{errors[`balances.${idx}.currency_id`]}</span>
-                        )}
-                      </div>
-                      {/* Balance */}
-                      <div className="form-control">
-                        <label className="label"><span className="label-text">Balance *</span></label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          placeholder="0.00"
-                          className={`input input-bordered ${errors[`balances.${idx}.balance`] ? 'input-error' : 'focus:input-primary'}`}
-                          value={b.balance}
-                          onChange={(e) => setBalances(prev => prev.map((x,i) => i===idx ? { ...x, balance: e.target.value } : x))}
-                        />
-                        {errors[`balances.${idx}.balance`] && (
-                          <span className="text-xs text-error">{errors[`balances.${idx}.balance`]}</span>
-                        )}
-                      </div>
-                      {/* Average Cost (optional) */}
-                      <div className="form-control">
-                        <label className="label"><span className="label-text">Average Cost (optional)</span></label>
-                        <input
-                          type="number"
-                          step="0.00000001"
-                          placeholder="auto from system rate"
-                          className={`input input-bordered ${errors[`balances.${idx}.average_cost`] ? 'input-error' : 'focus:input-primary'}`}
-                          value={b.average_cost ?? ''}
-                          onChange={(e) => setBalances(prev => prev.map((x,i) => i===idx ? { ...x, average_cost: e.target.value } : x))}
-                        />
-                        {errors[`balances.${idx}.average_cost`] && (
-                          <span className="text-xs text-error">{errors[`balances.${idx}.average_cost`]}</span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex justify-end">
-                      {balances.length > 1 && (
-                        <button
-                          type="button"
-                          className="btn btn-ghost btn-sm"
-                          onClick={() => setBalances(prev => prev.filter((_,i) => i!==idx))}
-                        >
-                          Remove
-                        </button>
-                      )}
-                    </div>
+
+            {/* Description */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-medium">Description</span>
+              </label>
+              <textarea
+                className="textarea textarea-bordered w-full h-20 focus:textarea-primary"
+                placeholder="Optional description for this account..."
+                value={formData.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+              />
+            </div>
+
+            {/* Active Status */}
+            <div className="form-control">
+              <label className="cursor-pointer label justify-start gap-4">
+                <input
+                  type="checkbox"
+                  className="toggle toggle-primary"
+                  checked={formData.isActive}
+                  onChange={(e) => handleInputChange('isActive', e.target.checked)}
+                />
+                <div>
+                  <span className="label-text font-medium">Account Status</span>
+                  <div className="label-text-alt text-wrap">
+                    {formData.isActive ? 'Active - account will be visible in transaction forms' : 'Inactive - account will be hidden from transaction forms'}
                   </div>
                 </div>
-              ))}
+              </label>
             </div>
           </div>
 
           {/* Credit Card Specific Fields */}
           {formData.type === 'credit_card' && (
-            <>
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold text-base-content">Credit Card Details</h4>
+
               {/* Credit Limit */}
               <div className="form-control">
                 <label className="label">
@@ -314,38 +272,109 @@ export default function AddAccountModal({ onClose, onSave }: AddAccountModalProp
                   {errors.paymentDueDay && <label className="label"><span className="label-text-alt text-error">{errors.paymentDueDay}</span></label>}
                 </div>
               </div>
-            </>
+            </div>
           )}
 
-          {/* Description */}
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-medium">Description</span>
-            </label>
-            <textarea
-              className="textarea textarea-bordered h-20 focus:textarea-primary"
-              placeholder="Optional description for this account..."
-              value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-            />
-          </div>
+          {/* Initial Balances (moved to bottom) */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-lg font-semibold text-base-content">Initial Balances</h4>
+                <p className="text-sm text-base-content/70">Set up your account's starting balance in different currencies</p>
+              </div>
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                onClick={() => setBalances(prev => [...prev, { id: crypto.randomUUID(), currency_id: '', balance: '', average_cost: '' }])}
+              >
+                + Add Currency
+              </button>
+            </div>
 
-          {/* Active Status */}
-          <div className="form-control">
-            <label className="cursor-pointer label">
-              <span className="label-text font-medium">Account Status</span>
-              <input 
-                type="checkbox" 
-                className="toggle toggle-primary" 
-                checked={formData.isActive}
-                onChange={(e) => handleInputChange('isActive', e.target.checked)}
-              />
-            </label>
-            <label className="label">
-              <span className="label-text-alt">
-                {formData.isActive ? 'Active - account will be visible in transaction forms' : 'Inactive - account will be hidden from transaction forms'}
-              </span>
-            </label>
+            <div className="space-y-3">
+              {balances.map((b, idx) => (
+                <div key={b.id} className="card bg-base-100 border border-base-200 shadow-sm">
+                  <div className="card-body p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Currency */}
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text font-medium">Currency *</span>
+                        </label>
+                        <select
+                          className={`select select-bordered ${errors[`balances.${idx}.currency_id`] ? 'select-error' : 'focus:select-primary'}`}
+                          value={b.currency_id}
+                          onChange={(e) => setBalances(prev => prev.map((x,i) => i===idx ? { ...x, currency_id: e.target.value } : x))}
+                        >
+                          <option value="">Select currency</option>
+                          {currencies.map(c => (
+                            <option key={c.id} value={String(c.id)}>{c.code} — {c.name}</option>
+                          ))}
+                        </select>
+                        {errors[`balances.${idx}.currency_id`] && (
+                          <label className="label">
+                            <span className="label-text-alt text-error">{errors[`balances.${idx}.currency_id`]}</span>
+                          </label>
+                        )}
+                      </div>
+
+                      {/* Balance */}
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text font-medium">Balance *</span>
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          placeholder="0.00"
+                          className={`input input-bordered ${errors[`balances.${idx}.balance`] ? 'input-error' : 'focus:input-primary'}`}
+                          value={b.balance}
+                          onChange={(e) => setBalances(prev => prev.map((x,i) => i===idx ? { ...x, balance: e.target.value } : x))}
+                        />
+                        {errors[`balances.${idx}.balance`] && (
+                          <label className="label">
+                            <span className="label-text-alt text-error">{errors[`balances.${idx}.balance`]}</span>
+                          </label>
+                        )}
+                      </div>
+
+                      {/* Average Cost (optional) */}
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text font-medium">Average Cost</span>
+                          <span className="label-text-alt">Optional</span>
+                        </label>
+                        <input
+                          type="number"
+                          step="0.00000001"
+                          placeholder="Auto from system rate"
+                          className={`input input-bordered ${errors[`balances.${idx}.average_cost`] ? 'input-error' : 'focus:input-primary'}`}
+                          value={b.average_cost ?? ''}
+                          onChange={(e) => setBalances(prev => prev.map((x,i) => i===idx ? { ...x, average_cost: e.target.value } : x))}
+                        />
+                        {errors[`balances.${idx}.average_cost`] && (
+                          <label className="label">
+                            <span className="label-text-alt text-error">{errors[`balances.${idx}.average_cost`]}</span>
+                          </label>
+                        )}
+                      </div>
+                    </div>
+
+                    {balances.length > 1 && (
+                      <div className="flex justify-end mt-3">
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm text-error hover:bg-error hover:text-error-content"
+                          onClick={() => setBalances(prev => prev.filter((_,i) => i!==idx))}
+                        >
+                          Remove Currency
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Action Buttons */}

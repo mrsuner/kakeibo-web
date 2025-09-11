@@ -1,8 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import AddAccountModal from '../settings/components/AddAccountModal'
-import EditAccountModal from '../settings/components/EditAccountModal'
 import { 
   useGetAccountsQuery,
   useCreateAccountMutation,
@@ -18,6 +16,8 @@ import {
   AccountsGrid,
   AccountsLoading,
   AccountsError,
+  AddAccountModal,
+  EditAccountModal,
   useAccountsViewPreference
 } from '@/features/accounts'
 
