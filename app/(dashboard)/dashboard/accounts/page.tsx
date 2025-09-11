@@ -53,17 +53,10 @@ export default function AccountsPage() {
     }
   }
 
-  const handleAccountAdd = async (newAccount: Omit<Account, 'id'>) => {
+  const handleAccountAdd = async (newAccount: CreateAccountRequest) => {
     try {
-      await createAccount({
-        name: newAccount.name,
-        type: newAccount.type,
-        balance: newAccount.balance,
-        description: newAccount.description,
-        credit_limit: newAccount.creditLimit,
-        billing_cycle_day: newAccount.billingCycleDay,
-        payment_due_day: newAccount.paymentDueDay,
-      }).unwrap()
+      // Pass through the request as-is to support multi-currency balances
+      await createAccount(newAccount).unwrap()
       setShowAddModal(false)
     } catch (error) {
       console.error('Failed to create account:', error)

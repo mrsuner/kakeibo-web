@@ -29,7 +29,14 @@ export interface Account {
 export interface CreateAccountRequest {
   name: string
   type: AccountType
-  balance: number
+  // Deprecated: single balance. Prefer `balances` below.
+  balance?: number
+  // New: multi-currency balances
+  balances?: Array<{
+    currency_id: string
+    balance: number
+    average_cost?: number
+  }>
   description?: string
   credit_limit?: number
   billing_cycle_day?: number
