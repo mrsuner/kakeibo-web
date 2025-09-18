@@ -59,53 +59,123 @@ export function CategoryFormModal({
         </div>
         <form className="p-6 space-y-4" onSubmit={handleSubmit}>
           {error && <div className="alert alert-error py-2 text-sm">{error}</div>}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="form-control">
-              <label className="label"><span className="label-text">Name</span></label>
-              <input className="input input-bordered" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Groceries" />
+          <div className="space-y-4">
+            {/* Row 1: Name and Type */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">Name</legend>
+                <input 
+                  type="text" 
+                  className="input" 
+                  value={name} 
+                  onChange={(e) => setName(e.target.value)} 
+                  placeholder="e.g., Groceries" 
+                />
+              </fieldset>
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">Type</legend>
+                <select 
+                  className="select" 
+                  value={type} 
+                  onChange={(e) => setType(e.target.value as 'income' | 'expense')}
+                >
+                  <option value="expense">Expense</option>
+                  <option value="income">Income</option>
+                </select>
+              </fieldset>
             </div>
-            <div className="form-control">
-              <label className="label"><span className="label-text">Type</span></label>
-              <select className="select select-bordered" value={type} onChange={(e) => setType(e.target.value as 'income' | 'expense')}>
-                <option value="expense">Expense</option>
-                <option value="income">Income</option>
-              </select>
+            
+            {/* Row 2: Color and Icon */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">Color</legend>
+                <div className="flex gap-2">
+                  <input 
+                    type="color" 
+                    className="input w-16 p-1" 
+                    value={color} 
+                    onChange={(e) => setColor(e.target.value)} 
+                  />
+                  <input 
+                    type="text" 
+                    className="input flex-1" 
+                    value={color} 
+                    onChange={(e) => setColor(e.target.value)} 
+                    placeholder="#808080" 
+                  />
+                </div>
+              </fieldset>
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">Icon</legend>
+                <input 
+                  type="text" 
+                  className="input" 
+                  value={icon} 
+                  onChange={(e) => setIcon(e.target.value)} 
+                  placeholder="Emoji or short text (e.g., 🛒)" 
+                />
+                <p className="label">Optional</p>
+              </fieldset>
             </div>
-            <div className="form-control">
-              <label className="label"><span className="label-text">Color</span></label>
-              <div className="flex gap-2">
-                <input type="color" className="input input-bordered w-16 p-1" value={color} onChange={(e) => setColor(e.target.value)} />
-                <input className="input input-bordered flex-1" value={color} onChange={(e) => setColor(e.target.value)} placeholder="#808080" />
-              </div>
+            
+            {/* Row 3: Description (full width) */}
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">Description</legend>
+              <textarea 
+                className="textarea" 
+                rows={3} 
+                value={description} 
+                onChange={(e) => setDescription(e.target.value)} 
+                placeholder="Optional description" 
+              />
+              <p className="label">Optional</p>
+            </fieldset>
+            
+            {/* Row 4: Budget and Budget Period */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">Budget</legend>
+                <input 
+                  type="number" 
+                  min="0" 
+                  step="0.01" 
+                  className="input" 
+                  value={budget} 
+                  onChange={(e) => setBudget(e.target.value)} 
+                  placeholder="e.g., 250" 
+                />
+                <p className="label">Optional</p>
+              </fieldset>
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">Budget Period</legend>
+                <select 
+                  className="select" 
+                  value={budgetPeriod} 
+                  onChange={(e) => setBudgetPeriod(e.target.value as 'daily' | 'weekly' | 'monthly' | 'yearly' | '')}
+                >
+                  <option value="">None</option>
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+                <p className="label">Optional</p>
+              </fieldset>
             </div>
-            <div className="form-control">
-              <label className="label"><span className="label-text">Icon</span></label>
-              <input className="input input-bordered" value={icon} onChange={(e) => setIcon(e.target.value)} placeholder="Emoji or short text (e.g., 🛒)" />
-            </div>
-            <div className="form-control sm:col-span-2">
-              <label className="label"><span className="label-text">Description</span></label>
-              <textarea className="textarea textarea-bordered" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Optional description" />
-            </div>
-            <div className="form-control">
-              <label className="label"><span className="label-text">Budget</span></label>
-              <input type="number" min="0" step="0.01" className="input input-bordered" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="e.g., 250" />
-            </div>
-            <div className="form-control">
-              <label className="label"><span className="label-text">Budget Period</span></label>
-              <select className="select select-bordered" value={budgetPeriod} onChange={(e) => setBudgetPeriod(e.target.value as any)}>
-                <option value="">None</option>
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="yearly">Yearly</option>
-              </select>
-            </div>
-            <div className="form-control sm:col-span-2">
+            
+            {/* Row 5: Default checkbox (full width) */}
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">Default Settings</legend>
               <label className="label cursor-pointer justify-start gap-3">
-                <input type="checkbox" className="checkbox" checked={isDefault} onChange={(e) => setIsDefault(e.target.checked)} />
+                <input 
+                  type="checkbox" 
+                  className="checkbox" 
+                  checked={isDefault} 
+                  onChange={(e) => setIsDefault(e.target.checked)} 
+                />
                 <span className="label-text">Set as default for this type</span>
               </label>
-            </div>
+            </fieldset>
           </div>
           <div className="flex justify-end gap-2 pt-2 border-t border-base-200">
             <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
